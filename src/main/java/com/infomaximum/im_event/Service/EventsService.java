@@ -108,4 +108,23 @@ public class EventsService {
         }
 
     }
+
+    public String addCoinsToEvent(String user, String event, Integer coins) {
+        final Optional<User> userByName = usersRepository.getUserByName(user);
+        final Optional<Event> eventByName = eventsRepository.getEventByName(event);
+
+        if (userByName.isEmpty()){
+            return String.format("Пользователь с именем %s не существует", user);
+        }
+        if (!userByName.get().getIsAdmin()){
+            return String.format("Уважаемый %s! Вы не имеете право на добавление дублонов", user);
+        }
+        if (eventByName.isEmpty()){
+            return String.format("Событье %s не существует", event);
+        }
+
+        eventByName.get().setCoins(coins);
+        eventsRepository.flush();
+        return String.format("Для мероприятия %s было добавлено %d дублонов", event, coins);
+    }
 }

@@ -50,6 +50,11 @@ public class EventsController {
         return eventsService.addUserToEvent(user, event, userName);
     }
 
+    @PostMapping("/addCoins")
+    private String addCoins(String user, String event, Integer coins){
+        return eventsService.addCoinsToEvent(user, event, coins);
+    }
+
     @DeleteMapping("/deleteEventByName")
     public String deleteEvent(String user, String event){
         return eventsService.deleteEvent(user, event);
