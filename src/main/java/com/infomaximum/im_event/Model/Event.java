@@ -41,6 +41,9 @@ public class Event {
     @JoinColumn(name = "event_participants")
     private List<User> participants;
 
+    @Column(name = "description")
+    private String description;
+
     @Column(name = "create_date")
     private String create_date;
     @Column(name = "start_date")
@@ -51,10 +54,10 @@ public class Event {
     @Column(name = "event_type")
     private EVENT_TYPE eventType;
 
-    public Event(String name, User initiator, Date start_date, EVENT_TYPE eventType, Boolean isRepeatable) {
+    public Event(String name, User initiator, Date start_date, EVENT_TYPE eventType, Boolean isRepeatable, String description) {
         this.name = name;
         this.initiator = initiator;
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM:dd:yyyy:HH:mm");
         final String current_date = dateFormat.format(new Date());
         this.create_date = current_date;
         final String format = dateFormat.format(start_date);
@@ -63,6 +66,7 @@ public class Event {
         this.eventType = eventType;
         this.isRepeatable = isRepeatable;
         this.isActive = true;
+        this.description = description;
     }
 
     public void addCoins(Integer coin) {

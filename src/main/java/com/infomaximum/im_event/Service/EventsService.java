@@ -48,12 +48,12 @@ public class EventsService {
         return getEventFromDB(name).get();
     }
 
-    public Event addEvent(String name, User initiator, Date start_date, EVENT_TYPE eventType, Boolean isRepeatable, Integer coin){
+    public Event addEvent(String name, User initiator, Date start_date, EVENT_TYPE eventType, Boolean isRepeatable, Integer coin, String description){
         final Optional<Event> eventByName = eventsRepository.getEventByName(name);
         if (eventByName.isPresent()){
             return eventByName.get();
         }else {
-            final Event event = new Event(name, initiator, start_date, eventType, isRepeatable);
+            final Event event = new Event(name, initiator, start_date, eventType, isRepeatable, description);
             if (coin > 0){
                 event.addCoins(coin);
             }
