@@ -22,11 +22,10 @@ public class UserController {
         this.usersService = usersService;
         this.eventsService = eventsService;
     }
-//    @PostMapping("/registry")
-//    public String registryUser(User user){
-//
-//
-//    }
+    @PostMapping("/registry")
+    public String registryUser(User user){
+       return usersService.registry(user);
+    }
 
     @GetMapping("/getUser")
     public User getUserByName(@RequestParam String name){

@@ -29,9 +29,11 @@ public class UsersService {
     }
 
     public String registry(User user){
-        if (getUserFromDB(user.getId()).isPresent()){
+        if (getUserFromDB(user.getName()).isPresent()){
             return String.format("Пользователь %s уже существует", user.getName());
-        }else {
+        } else if (getUserFromDB(user.getEmail()).isPresent()) {
+            return String.format("Пользователь %s уже существует", user.getName());
+        } else {
             usersRepository.saveAndFlush(user);
             return String.format("Пользователь %s успешно зарегистрирован", user.getName());
         }
