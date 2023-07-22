@@ -3,8 +3,6 @@ package com.infomaximum.im_event.Config;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
 import java.io.IOException;
 
@@ -30,6 +28,7 @@ public class SecurityConfig implements Filter {
         response.setHeader("Access-Control-Max-Age", "3600");
         response.setHeader("Access-Control-Allow-Headers", "x-requested-with");
         chain.doFilter(request, res);
+
     }
 
     @Override
