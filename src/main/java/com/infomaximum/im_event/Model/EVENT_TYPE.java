@@ -9,6 +9,7 @@ public enum EVENT_TYPE {
     EDUCATION,
     CULTURE,
     GAME,
-    CINEMA
+    CINEMA,
+    CHILL
 
 }

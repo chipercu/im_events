@@ -37,7 +37,7 @@ public class User {
     @Column(name = "user_email")
     private String email;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_events")
     private List<Event> events;
 

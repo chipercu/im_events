@@ -45,6 +45,11 @@ public class EventsController {
     public List<User> getEventUsers(@RequestParam String event){
         return eventsService.getEventUsers(event);
     }
+    @PostMapping("/addUserToEvent")
+    public String addUserToEvent(String event, String userName){
+        return eventsService.addUserToEvent(event, userName);
+    }
+
 
     @PostMapping("/addEvent")
     public Event addEvent(String name, String initiator, EVENT_TYPE eventType, Boolean isRepeatable, @RequestParam(required = false) Integer coins){

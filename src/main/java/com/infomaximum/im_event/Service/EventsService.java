@@ -69,4 +69,18 @@ public class EventsService {
         }
         return new ArrayList<User>();
     }
+
+    public String addUserToEvent(String event, String userName) {
+        final Optional<Event> eventByName = eventsRepository.getEventByName(event);
+        final Optional<User> userByName = usersRepository.getUserByName(userName);
+        if (eventByName.isEmpty()){
+            return String.format("Мероприятие с именем %s не существует", event);
+        }
+        if (userByName.isEmpty()){
+            return String.format("Пользователь с именем %s не существует", userName);
+        }
+        eventByName.get().addParticipant(userByName.get());
+        eventsRepository.flush();
+        return String.format("%s был успешно добавлен на мероприятие %s", userName, event);
+    }
 }

@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -28,8 +30,10 @@ public class Event {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "event_initiator")
     private User initiator;
+
     @Column(name = "isActive")
     private Boolean isActive;
+
     @Column(name = "isRepeatable")
     private Boolean isRepeatable;
 
@@ -38,9 +42,9 @@ public class Event {
     private List<User> participants;
 
     @Column(name = "create_date")
-    private Date create_date;
+    private String create_date;
     @Column(name = "start_date")
-    private Date start_date;
+    private String start_date;
     @Column(name = "coins")
     private Integer coins;
 
@@ -50,8 +54,11 @@ public class Event {
     public Event(String name, User initiator, Date start_date, EVENT_TYPE eventType, Boolean isRepeatable) {
         this.name = name;
         this.initiator = initiator;
-        this.create_date = new Date();
-        this.start_date = start_date;
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+        final String current_date = dateFormat.format(new Date());
+        this.create_date = current_date;
+        final String format = dateFormat.format(start_date);
+        this.start_date = format;
         this.coins = 0;
         this.eventType = eventType;
         this.isRepeatable = isRepeatable;
@@ -60,5 +67,9 @@ public class Event {
 
     public void addCoins(Integer coin) {
         this.coins = coin;
+    }
+
+    public void addParticipant(User user) {
+        participants.add(user);
     }
 }
