@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 
@@ -57,11 +58,9 @@ public class Event {
     public Event(String name, User initiator, Date start_date, EVENT_TYPE eventType, Boolean isRepeatable, String description) {
         this.name = name;
         this.initiator = initiator;
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MM:dd:yyyy:HH:mm");
-        final String current_date = dateFormat.format(new Date());
-        this.create_date = current_date;
-        final String format = dateFormat.format(start_date);
-        this.start_date = format;
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        this.create_date = dateFormat.format(new Date());
+        this.start_date = dateFormat.format(start_date);
         this.coins = 0;
         this.eventType = eventType;
         this.isRepeatable = isRepeatable;
