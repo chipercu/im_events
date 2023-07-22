@@ -27,7 +27,7 @@ public class EventsController {
         this.usersService = usersService;
     }
 
-    @GetMapping("/getEvent")
+    @GetMapping("/getEventById")
     public Event getEventById(@RequestParam(required = false) Long id){
         return eventsService.getEventById(id);
     }
