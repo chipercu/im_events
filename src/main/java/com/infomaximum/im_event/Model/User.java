@@ -27,7 +27,8 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Long id;
-
+    @Column(name = "isAdmin")
+    private Boolean isAdmin;
     @Column(name = "user_name")
     private String name;
     @Column(name = "user_surname")

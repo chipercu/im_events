@@ -50,6 +50,15 @@ public class EventsController {
         return eventsService.addUserToEvent(event, userName);
     }
 
+    @DeleteMapping("/deleteEventByName")
+    public String deleteEvent(String event){
+        return eventsService.deleteEvent(event);
+    }
+    @DeleteMapping("/deleteEventById")
+    public String deleteEvent(Long id){
+        return eventsService.deleteEvent(id);
+    }
+
 
     @PostMapping("/addEvent")
     public Event addEvent(String name,

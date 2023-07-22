@@ -83,4 +83,25 @@ public class EventsService {
         eventsRepository.flush();
         return String.format("%s был успешно добавлен на мероприятие %s", userName, event);
     }
+
+    public String deleteEvent(String event) {
+        final Optional<Event> eventByName = eventsRepository.getEventByName(event);
+        if (eventByName.isEmpty()){
+            return String.format("Событье %s не существует", event);
+        }else {
+            eventsRepository.delete(eventByName.get());
+            return String.format("Событье %s удалена", event);
+        }
+    }
+
+    public String deleteEvent(Long id) {
+        final Optional<Event> eventByName = eventsRepository.getEventById(id);
+        if (eventByName.isEmpty()){
+            return String.format("Событье с ID %s не существует", id);
+        }else {
+            eventsRepository.delete(eventByName.get());
+            return String.format("Событье с ID %s удалена", id);
+        }
+
+    }
 }
