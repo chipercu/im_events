@@ -20,8 +20,8 @@ import java.util.Optional;
 @Service
 public class EventsService {
 
-    private UsersRepository usersRepository;
-    private EventsRepository eventsRepository;
+    private final UsersRepository usersRepository;
+    private final EventsRepository eventsRepository;
 
     public EventsService(UsersRepository usersRepository, EventsRepository eventsRepository) {
         this.usersRepository = usersRepository;
@@ -31,6 +31,7 @@ public class EventsService {
     private Optional<Event> getEventFromDB(Long id){
         return eventsRepository.getEventById(id);
     }
+
     private Optional<Event> getEventFromDB(String name){
         return eventsRepository.getEventByName(name);
     }
@@ -38,17 +39,20 @@ public class EventsService {
     public List<Event> getEventsByType(EVENT_TYPE type){
         return eventsRepository.getEventsByEventType(type);
     }
+
     public List<Event> getAllEvents(){
         return eventsRepository.findAll();
     }
+
     public Event getEventById(Long id){
         return getEventFromDB(id).get();
     }
+
     public Event getEventByName(String name){
         return getEventFromDB(name).get();
     }
 
-    public Event addEvent(String name, User initiator, Date start_date, EVENT_TYPE eventType, Boolean isRepeatable, Integer coin, String description){
+    public Event addEvent(String name, User initiator, Date start_date, EVENT_TYPE eventType, Boolean isRepeatable, Double coin, String description){
         final Optional<Event> eventByName = eventsRepository.getEventByName(name);
         if (eventByName.isPresent()){
             return eventByName.get();
@@ -89,12 +93,20 @@ public class EventsService {
     }
 
     public String deleteEvent(String user, String event) {
+        final Optional<User> userByName = usersRepository.getUserByName(user);
         final Optional<Event> eventByName = eventsRepository.getEventByName(event);
+
+        if (userByName.isEmpty()){
+            return String.format("Пользователь с именем %s не существует", user);
+        }
         if (eventByName.isEmpty()){
             return String.format("Событье %s не существует", event);
-        }else {
+        }
+        if (userByName.get().getIsAdmin() || eventByName.get().getInitiator().getName().equals(userByName.get().getName())){
             eventsRepository.delete(eventByName.get());
             return String.format("Событье %s удалена", event);
+        }else {
+            return String.format("Уважаемый %s! Вы не имеете право удалить данное мероприятие", user);
         }
     }
 
@@ -109,7 +121,7 @@ public class EventsService {
 
     }
 
-    public String addCoinsToEvent(String user, String event, Integer coins) {
+    public String addCoinsToEvent(String user, String event, Double coins) {
         final Optional<User> userByName = usersRepository.getUserByName(user);
         final Optional<Event> eventByName = eventsRepository.getEventByName(event);
 
@@ -125,6 +137,79 @@ public class EventsService {
 
         eventByName.get().setCoins(coins);
         eventsRepository.flush();
-        return String.format("Для мероприятия %s было добавлено %d дублонов", event, coins);
+        return String.format("Для мероприятия %s было добавлено %f дублонов", event, coins);
+    }
+
+    public String finishEvent(String user, String event) {
+        final Optional<User> userByName = usersRepository.getUserByName(user);
+        final Optional<Event> eventByName = eventsRepository.getEventByName(event);
+
+        if (userByName.isEmpty()){
+            return String.format("Пользователь с именем %s не существует", user);
+        }
+        if (eventByName.isEmpty()){
+            return String.format("Событье %s не существует", event);
+        }
+        if (userByName.get().getName().equals(eventByName.get().getInitiator().getName()) || !userByName.get().getIsAdmin()){
+            return String.format("Уважаемый %s! Вы не имеете право завершить мероприятие", user);
+        }
+        eventByName.get().setIsActive(false);
+        final Double coins = eventByName.get().getCoins();
+        if (coins > 0){
+            try {
+                final List<User> participants = eventByName.get().getParticipants();
+                if (!participants.isEmpty()){
+                    final double count = coins / participants.size();
+                    participants.forEach(p -> p.setCoins(p.getCoins() + count));
+                }
+            }finally {
+                eventByName.get().setCoins(0.0);
+            }
+
+        }
+        return String.format("Событье %s завершена", event);
+    }
+
+    public String deleteUserFromEvent(String user, String event, String deletingUser) {
+        final Optional<User> userByName = usersRepository.getUserByName(user);
+        final Optional<User> deletingUserByName = usersRepository.getUserByName(deletingUser);
+        final Optional<Event> eventByName = eventsRepository.getEventByName(event);
+
+        if (userByName.isEmpty()){
+            return String.format("Пользователь с именем %s не существует", user);
+        }
+        if (deletingUserByName.isEmpty()){
+            return String.format("Пользователь с именем %s не существует", deletingUserByName);
+        }
+        if (eventByName.isEmpty()){
+            return String.format("Событье %s не существует", event);
+        }
+        if (userByName.get().getIsAdmin() || userByName.get().getName().equals(deletingUserByName.get().getName())){
+            eventByName.get().getParticipants().remove(deletingUserByName.get());
+            return String.format("Пользователь %s был удален с мероприятия", deletingUserByName);
+        }else {
+            return String.format("Уважаемый %s! Вы не имеете право удалять участников мероприятия", user);
+        }
+
+    }
+
+    public String restartEvent(String user, String event) {
+        final Optional<User> userByName = usersRepository.getUserByName(user);
+        final Optional<Event> eventByName = eventsRepository.getEventByName(event);
+
+        if (userByName.isEmpty()){
+            return String.format("Пользователь с именем %s не существует", user);
+        }
+        if (eventByName.isEmpty()){
+            return String.format("Событье %s не существует", event);
+        }
+        if (userByName.get().getIsAdmin() || eventByName.get().getInitiator().getName().equals(userByName.get().getName())){
+            eventByName.get().setIsActive(true);
+            return String.format("Мероприятие %s была успешно перезапущена", event);
+        }else {
+            return String.format("Уважаемый %s!Вам не удалось перезапустить мероприятие, возможно у вас нет прав", user);
+        }
+
+
     }
 }

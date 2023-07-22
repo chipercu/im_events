@@ -37,6 +37,9 @@ public class User {
     private String password;
     @Column(name = "user_email")
     private String email;
+    @Column(name = "coins")
+    private Double coins;
+
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_events")

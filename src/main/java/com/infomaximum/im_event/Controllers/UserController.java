@@ -31,6 +31,7 @@ public class UserController {
     public User getUserByName(@RequestParam String name){
         return usersService.getUserByName(name);
     }
+
     @GetMapping("/getAllUsers")
     public List<User> getAllUsers(){
         return usersService.getAllUsers();

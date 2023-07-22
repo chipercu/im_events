@@ -50,7 +50,7 @@ public class Event {
     @Column(name = "start_date")
     private String start_date;
     @Column(name = "coins")
-    private Integer coins;
+    private Double coins;
 
     @Column(name = "event_type")
     private EVENT_TYPE eventType;
@@ -61,14 +61,14 @@ public class Event {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         this.create_date = dateFormat.format(new Date());
         this.start_date = dateFormat.format(start_date);
-        this.coins = 0;
+        this.coins = 0.0;
         this.eventType = eventType;
         this.isRepeatable = isRepeatable;
         this.isActive = true;
         this.description = description;
     }
 
-    public void addCoins(Integer coin) {
+    public void addCoins(Double coin) {
         this.coins = coin;
     }
 

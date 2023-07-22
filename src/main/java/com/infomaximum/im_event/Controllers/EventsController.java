@@ -27,31 +27,38 @@ public class EventsController {
         this.usersService = usersService;
     }
 
-    @GetMapping("/getEventById")
-    public Event getEventById(@RequestParam(required = false) Long id){
-        return eventsService.getEventById(id);
-    }
-
-    @GetMapping("/getEventByName")
-    public Event getEventByName(@RequestParam(required = false) String name){
-        return eventsService.getEventByName(name);
-    }
+//    @GetMapping("/getEventById")
+//    public Event getEventById(@RequestParam(required = false) Long id){
+//        return eventsService.getEventById(id);
+//    }
+//
+//    @GetMapping("/getEventByName")
+//    public Event getEventByName(@RequestParam(required = false) String name){
+//        return eventsService.getEventByName(name);
+//    }
 
     @GetMapping("/getAllEvents")
     public List<Event> getAllEvents(){
         return eventsService.getAllEvents();
     }
+
     @GetMapping("/getEventUsers")
     public List<User> getEventUsers(@RequestParam String event){
         return eventsService.getEventUsers(event);
     }
+
     @PostMapping("/addUserToEvent")
     public String addUserToEvent(String user, String event, String userName){
         return eventsService.addUserToEvent(user, event, userName);
     }
 
+    @PostMapping("/deleteUserFromEvent")
+    public String deleteUserFromEvent(String user, String event, String deletingUser){
+        return eventsService.deleteUserFromEvent(user, event, deletingUser);
+    }
+
     @PostMapping("/addCoins")
-    private String addCoins(String user, String event, Integer coins){
+    private String addCoins(String user, String event, Double coins){
         return eventsService.addCoinsToEvent(user, event, coins);
     }
 
@@ -59,34 +66,33 @@ public class EventsController {
     public String deleteEvent(String user, String event){
         return eventsService.deleteEvent(user, event);
     }
+
     @DeleteMapping("/deleteEventById")
     public String deleteEvent(String user, Long id){
         return eventsService.deleteEvent(user, id);
     }
+    @PostMapping("/restartEvent")
+    public String restartEvent(String user, String event){
+        return eventsService.restartEvent(user, event);
+    }
 
+    @PostMapping("/finishEvent")
+    public String finishEvent(String user, String event){
+        return eventsService.finishEvent(user, event);
+    }
 
     @PostMapping("/addEvent")
     public Event addEvent(String name,
                           String initiator,
                           EVENT_TYPE eventType,
                           Boolean isRepeatable,
-                          @RequestParam(required = false) Integer coins,
+                          @RequestParam(required = false) Double coins,
                           String description){
         final User user = usersService.getUserByName(initiator);
-        Integer c = 0;
+        Double c = 0.0;
         if (coins != null){
             c = coins;
         }
         return eventsService.addEvent(name, user, new Date(), eventType, isRepeatable, c, description);
     }
-
-
-
-
-
-
-
-
-
-
 }
