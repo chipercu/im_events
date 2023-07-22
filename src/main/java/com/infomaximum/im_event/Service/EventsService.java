@@ -70,7 +70,11 @@ public class EventsService {
         return new ArrayList<User>();
     }
 
-    public String addUserToEvent(String event, String userName) {
+    public String addUserToEvent(String user, String event, String userName) {
+        final Optional<User> redactor = usersRepository.getUserByName(user);
+        if (redactor.isEmpty()){
+            return String.format("Пользователь с именем %s не существует", user);
+        }
         final Optional<Event> eventByName = eventsRepository.getEventByName(event);
         final Optional<User> userByName = usersRepository.getUserByName(userName);
         if (eventByName.isEmpty()){
@@ -84,7 +88,7 @@ public class EventsService {
         return String.format("%s был успешно добавлен на мероприятие %s", userName, event);
     }
 
-    public String deleteEvent(String event) {
+    public String deleteEvent(String user, String event) {
         final Optional<Event> eventByName = eventsRepository.getEventByName(event);
         if (eventByName.isEmpty()){
             return String.format("Событье %s не существует", event);
@@ -94,7 +98,7 @@ public class EventsService {
         }
     }
 
-    public String deleteEvent(Long id) {
+    public String deleteEvent(String user, Long id) {
         final Optional<Event> eventByName = eventsRepository.getEventById(id);
         if (eventByName.isEmpty()){
             return String.format("Событье с ID %s не существует", id);

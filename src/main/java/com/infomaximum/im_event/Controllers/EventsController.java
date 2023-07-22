@@ -32,8 +32,8 @@ public class EventsController {
         return eventsService.getEventById(id);
     }
 
-    @GetMapping("/getEvent")
-    public Event getEventById(@RequestParam(required = false) String name){
+    @GetMapping("/getEventByName")
+    public Event getEventByName(@RequestParam(required = false) String name){
         return eventsService.getEventByName(name);
     }
 
@@ -46,17 +46,17 @@ public class EventsController {
         return eventsService.getEventUsers(event);
     }
     @PostMapping("/addUserToEvent")
-    public String addUserToEvent(String event, String userName){
-        return eventsService.addUserToEvent(event, userName);
+    public String addUserToEvent(String user, String event, String userName){
+        return eventsService.addUserToEvent(user, event, userName);
     }
 
     @DeleteMapping("/deleteEventByName")
-    public String deleteEvent(String event){
-        return eventsService.deleteEvent(event);
+    public String deleteEvent(String user, String event){
+        return eventsService.deleteEvent(user, event);
     }
     @DeleteMapping("/deleteEventById")
-    public String deleteEvent(Long id){
-        return eventsService.deleteEvent(id);
+    public String deleteEvent(String user, Long id){
+        return eventsService.deleteEvent(user, id);
     }
 
 
