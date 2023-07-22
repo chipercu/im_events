@@ -2,13 +2,12 @@ package com.infomaximum.im_event.Service;
 
 import com.infomaximum.im_event.Model.EVENT_TYPE;
 import com.infomaximum.im_event.Model.Event;
-import com.infomaximum.im_event.Model.EventType;
 import com.infomaximum.im_event.Model.User;
-import com.infomaximum.im_event.Repository.EventTypeRepository;
 import com.infomaximum.im_event.Repository.EventsRepository;
 import com.infomaximum.im_event.Repository.UsersRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -23,12 +22,10 @@ public class EventsService {
 
     private UsersRepository usersRepository;
     private EventsRepository eventsRepository;
-    private EventTypeRepository eventTypeRepository;
 
-    public EventsService(UsersRepository usersRepository, EventsRepository eventsRepository, EventTypeRepository eventType) {
+    public EventsService(UsersRepository usersRepository, EventsRepository eventsRepository) {
         this.usersRepository = usersRepository;
         this.eventsRepository = eventsRepository;
-        this.eventTypeRepository = eventType;
     }
 
     private Optional<Event> getEventFromDB(Long id){
@@ -38,7 +35,7 @@ public class EventsService {
         return eventsRepository.getEventByName(name);
     }
 
-    public List<Event> getEventsByType(EventType type){
+    public List<Event> getEventsByType(EVENT_TYPE type){
         return eventsRepository.getEventsByEventType(type);
     }
     public List<Event> getAllEvents(){
@@ -51,11 +48,7 @@ public class EventsService {
         return getEventFromDB(name).get();
     }
 
-    public EventType getEventType(EVENT_TYPE event_type){
-        return eventTypeRepository.getEventTypeByEventType(event_type);
-    }
-
-    public Event addEvent(String name, User initiator, Date start_date, EventType eventType){
+    public Event addEvent(String name, User initiator, Date start_date, EVENT_TYPE eventType){
         final Optional<Event> eventByName = eventsRepository.getEventByName(name);
         if (eventByName.isPresent()){
             return eventByName.get();
@@ -66,7 +59,11 @@ public class EventsService {
         }
     }
 
-
-
-
+    public List<User> getEventUsers(String event) {
+        final Optional<Event> eventByName = eventsRepository.getEventByName(event);
+        if (eventByName.isPresent()){
+            return eventByName.get().getParticipants();
+        }
+        return new ArrayList<User>();
+    }
 }

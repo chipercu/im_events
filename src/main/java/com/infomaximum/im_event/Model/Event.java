@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by a.kiperku
@@ -28,6 +29,10 @@ public class Event {
     @JoinColumn(name = "event_initiator")
     private User initiator;
 
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinColumn(name = "event_participants")
+    private List<User> participants;
+
     @Column(name = "create_date")
     private Date create_date;
     @Column(name = "start_date")
@@ -35,11 +40,10 @@ public class Event {
     @Column(name = "coins")
     private int coins;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "event_type")
-    private EventType eventType;
+    @Column(name = "event_type")
+    private EVENT_TYPE eventType;
 
-    public Event(String name, User initiator, Date start_date, int coins, EventType eventType) {
+    public Event(String name, User initiator, Date start_date, int coins, EVENT_TYPE eventType) {
         this.name = name;
         this.initiator = initiator;
         this.create_date = new Date();
@@ -47,7 +51,7 @@ public class Event {
         this.coins = coins;
         this.eventType = eventType;
     }
-    public Event(String name, User initiator, Date start_date, EventType eventType) {
+    public Event(String name, User initiator, Date start_date, EVENT_TYPE eventType) {
         this.name = name;
         this.initiator = initiator;
         this.create_date = new Date();

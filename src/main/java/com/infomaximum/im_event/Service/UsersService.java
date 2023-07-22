@@ -4,6 +4,7 @@ import com.infomaximum.im_event.Model.User;
 import com.infomaximum.im_event.Repository.UsersRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -40,4 +41,7 @@ public class UsersService {
        return usersRepository.getUserByName(name).get();
     }
 
+    public List<User> getAllUsers() {
+        return usersRepository.findAll();
+    }
 }

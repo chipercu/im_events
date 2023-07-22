@@ -2,15 +2,13 @@ package com.infomaximum.im_event.Controllers;
 
 import com.infomaximum.im_event.Model.EVENT_TYPE;
 import com.infomaximum.im_event.Model.Event;
-import com.infomaximum.im_event.Model.EventType;
 import com.infomaximum.im_event.Model.User;
 import com.infomaximum.im_event.Service.EventsService;
 import com.infomaximum.im_event.Service.UsersService;
-import jdk.jfr.EventSettings;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by a.kiperku
@@ -21,22 +19,41 @@ import java.util.Date;
 @RequestMapping("/im_events")
 public class EventsController {
 
-    private EventsService eventsService;
-    private UsersService usersService;
+    private final EventsService eventsService;
+    private final UsersService usersService;
 
+    public EventsController(EventsService eventsService, UsersService usersService) {
+        this.eventsService = eventsService;
+        this.usersService = usersService;
+    }
 
-    @GetMapping("/event")
+    @GetMapping("/getEvent")
     public Event getEventById(@RequestParam(required = false) Long id){
         return eventsService.getEventById(id);
     }
 
-    @PostMapping("/addEvent")
-    public Event addEvent(String name, String initiator, EVENT_TYPE event_type ){
-        final User user = usersService.getUserByName(initiator);
-        final EventType eventType = eventsService.getEventType(event_type);
+    @GetMapping("/getEvent")
+    public Event getEventById(@RequestParam(required = false) String name){
+        return eventsService.getEventByName(name);
+    }
 
+    @GetMapping("/getAllEvents")
+    public List<Event> getAllEvents(){
+        return eventsService.getAllEvents();
+    }
+    @GetMapping("/getEventUsers")
+    public List<User> getEventUsers(@RequestParam String event){
+        return eventsService.getEventUsers(event);
+    }
+
+    @PostMapping("/addEvent")
+    public Event addEvent(String name, String initiator, EVENT_TYPE eventType ){
+        final User user = usersService.getUserByName(initiator);
         return eventsService.addEvent(name, user, new Date(), eventType);
     }
+
+
+
 
 
 
