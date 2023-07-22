@@ -28,6 +28,10 @@ public class Event {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "event_initiator")
     private User initiator;
+    @Column(name = "isActive")
+    private Boolean isActive;
+    @Column(name = "isRepeatable")
+    private Boolean isRepeatable;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "event_participants")
@@ -38,25 +42,23 @@ public class Event {
     @Column(name = "start_date")
     private Date start_date;
     @Column(name = "coins")
-    private int coins;
+    private Integer coins;
 
     @Column(name = "event_type")
     private EVENT_TYPE eventType;
 
-    public Event(String name, User initiator, Date start_date, int coins, EVENT_TYPE eventType) {
-        this.name = name;
-        this.initiator = initiator;
-        this.create_date = new Date();
-        this.start_date = start_date;
-        this.coins = coins;
-        this.eventType = eventType;
-    }
-    public Event(String name, User initiator, Date start_date, EVENT_TYPE eventType) {
+    public Event(String name, User initiator, Date start_date, EVENT_TYPE eventType, Boolean isRepeatable) {
         this.name = name;
         this.initiator = initiator;
         this.create_date = new Date();
         this.start_date = start_date;
         this.coins = 0;
         this.eventType = eventType;
+        this.isRepeatable = isRepeatable;
+        this.isActive = true;
+    }
+
+    public void addCoins(Integer coin) {
+        this.coins = coin;
     }
 }

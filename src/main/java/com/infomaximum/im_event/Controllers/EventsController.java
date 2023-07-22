@@ -47,9 +47,13 @@ public class EventsController {
     }
 
     @PostMapping("/addEvent")
-    public Event addEvent(String name, String initiator, EVENT_TYPE eventType ){
+    public Event addEvent(String name, String initiator, EVENT_TYPE eventType, Boolean isRepeatable, @RequestParam(required = false) Integer coins){
         final User user = usersService.getUserByName(initiator);
-        return eventsService.addEvent(name, user, new Date(), eventType);
+        Integer c = 0;
+        if (coins != null){
+            c = coins;
+        }
+        return eventsService.addEvent(name, user, new Date(), eventType, isRepeatable, c);
     }
 
 
