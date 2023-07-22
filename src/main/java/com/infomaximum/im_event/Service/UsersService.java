@@ -1,5 +1,6 @@
 package com.infomaximum.im_event.Service;
 
+import com.infomaximum.im_event.Model.Event;
 import com.infomaximum.im_event.Model.User;
 import com.infomaximum.im_event.Repository.UsersRepository;
 import org.springframework.stereotype.Service;
@@ -45,5 +46,16 @@ public class UsersService {
 
     public List<User> getAllUsers() {
         return usersRepository.findAll();
+    }
+
+    public String deleteUser(String deletingUser) {
+        final Optional<User> deletingUserByName = usersRepository.getUserByName(deletingUser);
+        if (deletingUserByName.isEmpty()){
+            return String.format("Пользователь %s не существует", deletingUser);
+        }else {
+            usersRepository.delete(deletingUserByName.get());
+            return String.format("Пользователь %s удален", deletingUser);
+        }
+
     }
 }

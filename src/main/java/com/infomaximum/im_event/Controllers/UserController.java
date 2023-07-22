@@ -36,6 +36,12 @@ public class UserController {
         return usersService.getAllUsers();
     }
 
+    @DeleteMapping("/deleteUserByName")
+    public String deleteUserByName(String deletingUser){
+        return usersService.deleteUser(deletingUser);
+    }
+
+
 
 
 
