@@ -74,7 +74,30 @@ public class TelegramBotService extends TelegramLongPollingBot {
                     if (checkReg(user,chatId)){
                         sendAllEvents(chatId);
                     }
-
+                    break;
+                case "/+":
+                    if (checkReg(user, chatId)){
+                        final long event_id = Long.parseLong(text[1]);
+                        final Event eventById = eventsService.getEventById(event_id);
+                        if (eventById != null){
+                            eventsService.addUserToEvent(user.getName(), eventById.getName(), user.getName());
+                            sendMessage(chatId, "Вы успешно записались на мероприятие " + eventById.getName());
+                        }else {
+                            sendMessage(chatId, "Проверьте id мероприятия\n /event");
+                        }
+                    }
+                    break;
+                case "/-":
+                    if (checkReg(user, chatId)){
+                        final long event_id = Long.parseLong(text[1]);
+                        final Event eventById = eventsService.getEventById(event_id);
+                        if (eventById != null){
+                            eventsService.deleteUserFromEvent(user.getName(), eventById.getName(), user.getName());
+                            sendMessage(chatId, "Вы успешно отписались от мероприятия " + eventById.getName());
+                        }else {
+                            sendMessage(chatId, "Проверьте id мероприятия\n /event");
+                        }
+                    }
                     break;
                 case "/reg":
 
