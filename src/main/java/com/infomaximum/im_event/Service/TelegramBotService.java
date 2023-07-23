@@ -79,9 +79,9 @@ public class TelegramBotService extends TelegramLongPollingBot {
                             if (userByTelegramID != null){
                                 sendMessage(chatId, "Вы уже подписаны на IM.EVENTS");
                             }else {
-                                final User user = new User(name, surname, pass, mail);
-                                user.setTelegramId(chatId);
-                                usersService.registry(user);
+                                final User registryUser = new User(name, surname, pass, mail);
+                                registryUser.setTelegramId(chatId);
+                                usersService.registry(registryUser);
                                 sendMessage(chatId, "Вы успешно подписались на IM.EVENTS");
                             }
                         }
