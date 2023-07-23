@@ -89,7 +89,7 @@ public class TelegramBotService extends TelegramLongPollingBot {
                         final Event eventById = eventsService.getEventById(event_id);
                         if (eventById != null){
                             eventsService.addUserToEvent(user.getName(), eventById.getName(), user.getName());
-                            sendMessage(chatId, "Вы успешно записались на мероприятие " + eventById.getName());
+                            sendMessage(chatId, eventsService.addUserToEvent(user.getName(), eventById.getName(), user.getName()));
                         }else {
                             sendMessage(chatId, "Проверьте id мероприятия\n /event");
                         }
