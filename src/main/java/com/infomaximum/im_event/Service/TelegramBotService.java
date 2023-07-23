@@ -53,6 +53,11 @@ public class TelegramBotService extends TelegramLongPollingBot {
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
             final String[] text = messageText.split(" ");
+            final User user = usersService.getUserByTelegramID(chatId);
+            if (user == null){
+                sendMessage(chatId, "До использования бота вы должны\n быть зарегистрированы на IM.EVENTS\n/reg имя фамилия почта пароль");
+            }
+
             switch (text[0]){
                 case "/delete":
                     final Long event_id = Long.parseLong(text[1]);
