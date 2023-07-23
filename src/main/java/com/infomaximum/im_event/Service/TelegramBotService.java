@@ -34,7 +34,7 @@ public class TelegramBotService extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-       return botConfig.getBotName();
+        return botConfig.getBotName();
     }
 
     @Override
@@ -43,29 +43,38 @@ public class TelegramBotService extends TelegramLongPollingBot {
     }
 
 
+    private boolean checkReg(User user, long chatId) {
+        if (user == null) {
+            sendMessage(chatId, "До использования бота вы должны\n быть зарегистрированы на IM.EVENTS\n/reg имя фамилия почта пароль");
+            return false;
+        }
+        return true;
+    }
 
     @Override
     public void onUpdateReceived(Update update) {
 
         String currency = "";
 
-        if(update.hasMessage() && update.getMessage().hasText()){
+        if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
             final String[] text = messageText.split(" ");
             final User user = usersService.getUserByTelegramID(chatId);
-            if (user == null){
-                sendMessage(chatId, "До использования бота вы должны\n быть зарегистрированы на IM.EVENTS\n/reg имя фамилия почта пароль");
-                return;
-            }
 
-            switch (text[0]){
+
+            switch (text[0]) {
                 case "/delete":
-                    final Long event_id = Long.parseLong(text[1]);
-                    sendMessage(chatId, eventsService.deleteEvent("Дина", event_id));
+                    if (checkReg(user, chatId)){
+                        final Long event_id = Long.parseLong(text[1]);
+                        sendMessage(chatId, eventsService.deleteEvent("Дина", event_id));
+                    }
                     break;
                 case "/events":
-                    sendAllEvents(chatId);
+                    if (checkReg(user,chatId)){
+                        sendAllEvents(chatId);
+                    }
+
                     break;
                 case "/reg":
 
@@ -75,29 +84,31 @@ public class TelegramBotService extends TelegramLongPollingBot {
                         final String mail = text[3];
                         final String pass = text[4];
 
-                        if ((mail.split("@")[1].equals("infomaximum.com") || mail.split("@")[1].equals("infomaximum.biz")) && pass.equals("1111")){
+                        if ((mail.split("@")[1].equals("infomaximum.com") || mail.split("@")[1].equals("infomaximum.biz")) && pass.equals("1111")) {
                             final User userByTelegramID = usersService.getUserByTelegramID(chatId);
-                            if (userByTelegramID != null){
+                            if (userByTelegramID != null) {
                                 sendMessage(chatId, "Вы уже подписаны на IM.EVENTS");
-                            }else {
+                            } else {
                                 final User registryUser = new User(name, surname, pass, mail);
                                 registryUser.setTelegramId(chatId);
                                 usersService.registry(registryUser);
                                 sendMessage(chatId, "Вы успешно подписались на IM.EVENTS");
                             }
                         }
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         sendMessage(chatId, "Не правильный формат данных\n/reg имя фамилия почта пароль");
                     }
 
                     break;
                 case "/help":
-                    String commandList = """
+                    if (checkReg(user,chatId)){
+                        String commandList = """
                             command:
                             /events Посмотреть список активных мероприятий
                             /reg Подписка
                             """;
-                    sendMessage(chatId, commandList);
+                        sendMessage(chatId, commandList);
+                    }
                     break;
                 default:
                     try {
@@ -111,10 +122,7 @@ public class TelegramBotService extends TelegramLongPollingBot {
     }
 
 
-
-
-
-    private void sendAllEvents(Long chatId){
+    private void sendAllEvents(Long chatId) {
         StringBuilder answer = new StringBuilder();
         final List<Event> allEvents = eventsService.getAllEvents().stream().filter(Event::getIsActive).sorted((o1, o2) -> {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
@@ -127,15 +135,15 @@ public class TelegramBotService extends TelegramLongPollingBot {
                 throw new RuntimeException(e);
             }
         }).toList();
-        if (allEvents.isEmpty()){
+        if (allEvents.isEmpty()) {
             answer = new StringBuilder("На данный момент нет мероприятии");
         }
         answer.append("Список мероприятий:\n\n");
         int i = 1;
 
-        for (Event event: allEvents) {
+        for (Event event : allEvents) {
             String[] split = event.getStart_date().split(":");
-            String date = split[0] + ":"+ split[1];
+            String date = split[0] + ":" + split[1];
             answer.append(i++ + ". ").append(event.getName()).append(" (id ").append(event.getId()).append(")").append("\n")
                     .append("   Когда: ").append(date).append("\n\n");
 
@@ -149,7 +157,7 @@ public class TelegramBotService extends TelegramLongPollingBot {
     }
 
 
-    private void sendMessage(Long chatId, String textToSend){
+    private void sendMessage(Long chatId, String textToSend) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(String.valueOf(chatId));
         sendMessage.setText(textToSend);
