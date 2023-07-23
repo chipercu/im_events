@@ -10,6 +10,9 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -73,9 +76,15 @@ public class TelegramBotService extends TelegramLongPollingBot {
     private void sendAllEvents(Long chatId){
         StringBuilder answer = new StringBuilder();
         final List<Event> allEvents = eventsService.getAllEvents().stream().filter(Event::getIsActive).sorted((o1, o2) -> {
-            final Date date1 = new Date(o1.getStart_date());
-            final Date date2 = new Date(o1.getStart_date());
-            return (int) (date1.getTime() - date2.getTime());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+            SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+            try {
+                final Date date1 = format.parse(o1.getStart_date());
+                final Date date2 = format.parse(o2.getStart_date());
+                return (int) (date1.getTime() - date2.getTime());
+            } catch (java.text.ParseException e) {
+                throw new RuntimeException(e);
+            }
         }).toList();
         if (allEvents.isEmpty()){
             answer = new StringBuilder("На данный момент нет мероприятии");
