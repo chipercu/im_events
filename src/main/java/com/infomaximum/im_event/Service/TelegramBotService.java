@@ -127,8 +127,10 @@ public class TelegramBotService extends TelegramLongPollingBot {
                     if (checkReg(user,chatId)){
                         String commandList = """
                             command:
-                            /events Посмотреть список активных мероприятий
-                            /reg Подписка
+                            /events (Посмотреть список активных мероприятий)
+                            /reg (Подписка на IM.EVENT)
+                            /+ id  (подписка на мероприятие)
+                            /- id  (отписка от мероприятия)
                             """;
                         sendMessage(chatId, commandList);
                     }
