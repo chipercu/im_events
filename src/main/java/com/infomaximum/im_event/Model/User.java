@@ -39,6 +39,8 @@ public class User {
     private String email;
     @Column(name = "coins")
     private Double coins;
+    @Column(name = "telegramId")
+    private Long telegramId;
 
 
     @ManyToMany(fetch = FetchType.EAGER)

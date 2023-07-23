@@ -2,6 +2,7 @@ package com.infomaximum.im_event.Service;
 
 import com.infomaximum.im_event.Config.TelegramBotConfig;
 import com.infomaximum.im_event.Model.Event;
+import com.infomaximum.im_event.Model.User;
 import org.springframework.expression.ParseException;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -9,11 +10,8 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -26,10 +24,12 @@ public class TelegramBotService extends TelegramLongPollingBot {
 
     private final TelegramBotConfig botConfig;
     private final EventsService eventsService;
+    private final UsersService usersService;
 
-    public TelegramBotService(TelegramBotConfig botConfig, EventsService eventsService) {
+    public TelegramBotService(TelegramBotConfig botConfig, EventsService eventsService, UsersService usersService) {
         this.botConfig = botConfig;
         this.eventsService = eventsService;
+        this.usersService = usersService;
     }
 
     @Override
@@ -61,7 +61,33 @@ public class TelegramBotService extends TelegramLongPollingBot {
                 case "/events":
                     sendAllEvents(chatId);
                     break;
-                case "/event":
+                case "/reg":
+
+                    final String name = text[1];
+                    final String surname = text[2];
+                    final String mail = text[3];
+                    final String pass = text[4];
+
+                    if ((mail.split("@")[1].equals("infomaximum.com") || mail.split("@")[1].equals("infomaximum.biz")) && pass.equals("1111")){
+                        final User userByTelegramID = usersService.getUserByTelegramID(chatId);
+                        if (userByTelegramID != null){
+                            sendMessage(chatId, "Вы уже подписаны на IM.EVENTS");
+                        }else {
+                            final User user = new User(name, surname, mail, pass);
+                            user.setTelegramId(chatId);
+                            usersService.registry(user);
+                            sendMessage(chatId, "Вы успешно подписались на IM.EVENTS");
+                        }
+                    }
+                    break;
+                case "/help":
+                    String commandList = """
+                            command:
+                            /events Посмотреть список активных мероприятий
+                            /reg Подписка
+                            """;
+                    sendMessage(chatId, commandList);
+                    break;
                 default:
                     try {
                         sendMessage(chatId, " hello");
@@ -72,6 +98,10 @@ public class TelegramBotService extends TelegramLongPollingBot {
             }
         }
     }
+
+
+
+
 
     private void sendAllEvents(Long chatId){
         StringBuilder answer = new StringBuilder();

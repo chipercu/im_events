@@ -16,5 +16,5 @@ public interface UsersRepository extends JpaRepository<User, Long> {
     Optional<User> getUserById(Long id);
     Optional<User> getUserByEmail(String email);
     Optional<User> getUserByName(String name);
-
+    User getUserByTelegramId(long chatId);
 }

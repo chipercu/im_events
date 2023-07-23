@@ -64,4 +64,8 @@ public class UsersService {
         final Optional<User> userByEmail = usersRepository.getUserByEmail(email);
         return userByEmail.orElseThrow();
     }
+
+    public User getUserByTelegramID(long chatId) {
+        return usersRepository.getUserByTelegramId(chatId);
+    }
 }
