@@ -59,25 +59,25 @@ public class TelegramBotService extends TelegramLongPollingBot {
         if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
-            final String[] text = messageText.split(" ");
+            final String[] commands = messageText.split(" ");
             final User user = usersService.getUserByTelegramID(chatId);
 
 
-            switch (text[0]) {
+            switch (commands[0]) {
                 case "/delete":
                     if (checkReg(user, chatId)){
-                        final Long event_id = Long.parseLong(text[1]);
+                        final Long event_id = Long.parseLong(commands[1]);
                         sendMessage(chatId, eventsService.deleteEvent("Дина", event_id));
                     }
                     break;
-                case "/events":
+                case "/all":
                     if (checkReg(user,chatId)){
                         sendAllEvents(chatId);
                     }
                     break;
                 case "/+":
                     if (checkReg(user, chatId)){
-                        final long event_id = Long.parseLong(text[1]);
+                        final long event_id = Long.parseLong(commands[1]);
                         final Event eventById = eventsService.getEventById(event_id);
                         if (eventById != null){
                             eventsService.addUserToEvent(user.getName(), eventById.getName(), user.getName());
@@ -87,9 +87,33 @@ public class TelegramBotService extends TelegramLongPollingBot {
                         }
                     }
                     break;
+                case "/event":
+                    if (checkReg(user, chatId)){
+                        final long event_id = Long.parseLong(commands[1]);
+                        final Event eventById = eventsService.getEventById(event_id);
+                        if (eventById != null){
+                            StringBuilder message = new StringBuilder();
+                            final List<User> participants = eventById.getParticipants();
+
+                            String[] split = eventById.getStart_date().split(":");
+                            String date = split[0] + ":" + split[1];
+                            message.append(eventById.getName()).append("\n")
+                                    .append("Когда: ").append(date).append("\n")
+                                    .append("Организатор: ").append(eventById.getInitiator().getName()).append(" ").append(eventById.getInitiator().getSurname()).append("\n")
+                                    .append(eventById.getDescription()).append("\n\n")
+                                    .append("Участники:\n");
+                            if (participants.size() > 0){
+                                for (int i = 0; i < participants.size(); i++) {
+                                    message.append(i + 1).append(".").append(participants.get(i).getName()).append(" ").append(participants.get(i).getSurname());
+                                }
+                            }
+                        }else {
+                            sendMessage(chatId, "Проверьте id мероприятия\n /event");
+                        }
+                    }
                 case "/-":
                     if (checkReg(user, chatId)){
-                        final long event_id = Long.parseLong(text[1]);
+                        final long event_id = Long.parseLong(commands[1]);
                         final Event eventById = eventsService.getEventById(event_id);
                         if (eventById != null){
                             eventsService.deleteUserFromEvent(user.getName(), eventById.getName(), user.getName());
@@ -102,10 +126,10 @@ public class TelegramBotService extends TelegramLongPollingBot {
                 case "/reg":
 
                     try {
-                        final String name = text[1];
-                        final String surname = text[2];
-                        final String mail = text[3];
-                        final String pass = text[4];
+                        final String name = commands[1];
+                        final String surname = commands[2];
+                        final String mail = commands[3];
+                        final String pass = commands[4];
 
                         if ((mail.split("@")[1].equals("infomaximum.com") || mail.split("@")[1].equals("infomaximum.biz")) && pass.equals("1111")) {
                             final User userByTelegramID = usersService.getUserByTelegramID(chatId);
@@ -127,7 +151,7 @@ public class TelegramBotService extends TelegramLongPollingBot {
                     if (checkReg(user,chatId)){
                         String commandList = """
                             command:
-                            /events (просмотр списка активных мероприятий)
+                            /all (просмотр списка активных мероприятий)
                             /reg (подписка на IM.EVENT)
                             /+ id  (запись на мероприятие)
                             /- id  (отписка от мероприятия)
