@@ -127,9 +127,9 @@ public class TelegramBotService extends TelegramLongPollingBot {
                     if (checkReg(user,chatId)){
                         String commandList = """
                             command:
-                            /events (Посмотреть список активных мероприятий)
-                            /reg (Подписка на IM.EVENT)
-                            /+ id  (подписка на мероприятие)
+                            /events (просмотр списка активных мероприятий)
+                            /reg (подписка на IM.EVENT)
+                            /+ id  (запись на мероприятие)
                             /- id  (отписка от мероприятия)
                             """;
                         sendMessage(chatId, commandList);
@@ -147,7 +147,7 @@ public class TelegramBotService extends TelegramLongPollingBot {
     }
 
 
-    private void sendAllEvents(Long chatId) {
+    public void sendAllEvents(Long chatId) {
         StringBuilder answer = new StringBuilder();
         final List<Event> allEvents = eventsService.getAllEvents().stream().filter(Event::getIsActive).sorted((o1, o2) -> {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
@@ -182,7 +182,7 @@ public class TelegramBotService extends TelegramLongPollingBot {
     }
 
 
-    private void sendMessage(Long chatId, String textToSend) {
+    public void sendMessage(Long chatId, String textToSend) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(String.valueOf(chatId));
         sendMessage.setText(textToSend);

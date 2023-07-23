@@ -22,10 +22,12 @@ public class EventsService {
 
     private final UsersRepository usersRepository;
     private final EventsRepository eventsRepository;
+    private final TelegramBotService telegramBotService;
 
-    public EventsService(UsersRepository usersRepository, EventsRepository eventsRepository) {
+    public EventsService(UsersRepository usersRepository, EventsRepository eventsRepository, TelegramBotService telegramBotService) {
         this.usersRepository = usersRepository;
         this.eventsRepository = eventsRepository;
+        this.telegramBotService = telegramBotService;
     }
 
     private Optional<Event> getEventFromDB(Long id){
@@ -62,6 +64,18 @@ public class EventsService {
                 event.addCoins(coin);
             }
             eventsRepository.saveAndFlush(event);
+            final List<User> all = usersRepository.findAll();
+            for (User user: all){
+                if (user.getTelegramId() != null){
+                    StringBuilder message = new StringBuilder();
+                    String[] split = event.getStart_date().split(":");
+                    String date = split[0] + ":" + split[1];
+                    message.append("Новое мероприятие:\n")
+                            .append(event.getName()).append(" (id ").append(event.getId()).append(")").append("\n")
+                            .append("   Когда: ").append(date).append("\n\n");
+                    telegramBotService.sendMessage(user.getTelegramId(), message.toString());
+                }
+            }
             return event;
         }
     }
