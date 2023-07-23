@@ -21,6 +21,8 @@ public class User {
         this.surname = surname;
         this.password = password;
         this.email = email;
+        this.isAdmin = false;
+        this.coins = 0.0;
     }
 
     @Id
