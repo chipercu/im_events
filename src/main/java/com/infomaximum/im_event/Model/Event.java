@@ -55,12 +55,12 @@ public class Event {
     @Column(name = "event_type")
     private EVENT_TYPE eventType;
 
-    public Event(String name, User initiator, Date start_date, EVENT_TYPE eventType, Boolean isRepeatable, String description) {
+    public Event(String name, User initiator, String start_date, EVENT_TYPE eventType, Boolean isRepeatable, String description) {
         this.name = name;
         this.initiator = initiator;
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         this.create_date = dateFormat.format(new Date());
-        this.start_date = dateFormat.format(start_date);
+        this.start_date = start_date;
         this.coins = 0.0;
         this.eventType = eventType;
         this.isRepeatable = isRepeatable;

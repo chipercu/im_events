@@ -57,7 +57,7 @@ public class EventsService {
         return getEventFromDB(name).get();
     }
 
-    public Event addEvent(String name, User initiator, Date start_date, EVENT_TYPE eventType, Boolean isRepeatable, Double coin, String description){
+    public Event addEvent(String name, User initiator, String start_date, EVENT_TYPE eventType, Boolean isRepeatable, Double coin, String description){
         final Optional<Event> eventByName = eventsRepository.getEventByName(name);
         if (eventByName.isPresent()){
             return eventByName.get();
@@ -105,6 +105,9 @@ public class EventsService {
         }
         if (userByName.isEmpty()){
             return String.format("Пользователь с именем %s не существует", userName);
+        }
+        if(eventByName.get().getParticipants().contains(userByName.get())){
+            return "Вы уже зарегистрированы на данное мероприятие";
         }
         eventByName.get().addParticipant(userByName.get());
         eventsRepository.saveAndFlush(eventByName.get());
@@ -204,6 +207,7 @@ public class EventsService {
             return String.format("Событье %s не существует", event);
         }
         if (userByName.get().getIsAdmin() || userByName.get().getName().equals(deletingUserByName.get().getName())){
+
             eventByName.get().getParticipants().remove(deletingUserByName.get());
             eventsRepository.saveAndFlush(eventByName.get());
             return String.format("Пользователь %s был удален с мероприятия", deletingUserByName);

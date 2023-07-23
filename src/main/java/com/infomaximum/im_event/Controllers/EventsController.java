@@ -84,6 +84,7 @@ public class EventsController {
     @PostMapping("/addEvent")
     public Event addEvent(String name,
                           String initiator,
+                          String start_date,
                           EVENT_TYPE eventType,
                           Boolean isRepeatable,
                           @RequestParam(required = false) Double coins,
@@ -93,6 +94,6 @@ public class EventsController {
         if (coins != null){
             c = coins;
         }
-        return eventsService.addEvent(name, user, new Date(), eventType, isRepeatable, c, description);
+        return eventsService.addEvent(name, user, start_date, eventType, isRepeatable, c, description);
     }
 }
