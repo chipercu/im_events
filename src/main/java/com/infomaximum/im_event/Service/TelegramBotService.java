@@ -45,7 +45,7 @@ public class TelegramBotService extends TelegramLongPollingBot {
 
     private boolean checkReg(User user, long chatId) {
         if (user == null) {
-            sendMessage(chatId, "До использования бота вы должны\n быть зарегистрированы на IM.EVENTS\n/reg имя фамилия почта пароль");
+            sendMessage(chatId, "До использования бота вы должны\n быть зарегистрированы на IM.EVENTS\n/reg Имя Фамилия почта пароль");
             return false;
         }
         return true;
@@ -145,7 +145,7 @@ public class TelegramBotService extends TelegramLongPollingBot {
                             }
                         }
                     } catch (Exception e) {
-                        sendMessage(chatId, "Не правильный формат данных\n/reg имя фамилия почта пароль");
+                        sendMessage(chatId, "Не правильный формат данных\n/reg Имя Фамилия почта пароль");
                     }
 
                     break;

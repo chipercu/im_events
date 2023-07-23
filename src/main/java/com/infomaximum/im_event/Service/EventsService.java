@@ -205,6 +205,7 @@ public class EventsService {
         }
         if (userByName.get().getIsAdmin() || userByName.get().getName().equals(deletingUserByName.get().getName())){
             eventByName.get().getParticipants().remove(deletingUserByName.get());
+            eventsRepository.flush();
             return String.format("Пользователь %s был удален с мероприятия", deletingUserByName);
         }else {
             return String.format("Уважаемый %s! Вы не имеете право удалять участников мероприятия", user);
