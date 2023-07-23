@@ -75,7 +75,7 @@ public class EventsService {
                     String date = split[0] + ":" + split[1];
                     message.append("Новое мероприятие:\n")
                             .append(event.getName()).append(" (id ").append(event.getId()).append(")").append("\n")
-                            .append("   Когда: ").append(date).append("\n\n");
+                            .append("Когда: ").append(date).append("\n\n");
 
                     final TelegramBotService telegramBotService = applicationContext.getBean(TelegramBotService.class);
                     telegramBotService.sendMessage(user.getTelegramId(), message.toString());
