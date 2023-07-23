@@ -67,7 +67,15 @@ public class TelegramBotService extends TelegramLongPollingBot {
                 case "/delete":
                     if (checkReg(user, chatId)){
                         final Long event_id = Long.parseLong(commands[1]);
-                        sendMessage(chatId, eventsService.deleteEvent("Дина", event_id));
+                        final Event eventById = eventsService.getEventById(event_id);
+                        if (eventById != null){
+                            final List<User> allUsers = usersService.getAllUsers();
+                            for (User u: allUsers){
+                                sendMessage(u.getTelegramId(), String.format("Событье %s удалена", eventById.getName()));
+                            }
+                        }
+                        eventsService.deleteEvent("Дина", event_id);
+//                        sendMessage(chatId, );
                     }
                     break;
                 case "/all":
