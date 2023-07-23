@@ -149,17 +149,7 @@ public class TelegramBotService extends TelegramLongPollingBot {
 
     public void sendAllEvents(Long chatId) {
         StringBuilder answer = new StringBuilder();
-        final List<Event> allEvents = eventsService.getAllEvents().stream().filter(Event::getIsActive).sorted((o1, o2) -> {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-            SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm");
-            try {
-                final Date date1 = format.parse(o1.getStart_date());
-                final Date date2 = format.parse(o2.getStart_date());
-                return (int) (date2.getTime() - date1.getTime());
-            } catch (java.text.ParseException e) {
-                throw new RuntimeException(e);
-            }
-        }).toList();
+        final List<Event> allEvents = eventsService.getAllEvents().stream().filter(Event::getIsActive).toList();
         if (allEvents.isEmpty()) {
             answer = new StringBuilder("На данный момент нет мероприятии");
         }
