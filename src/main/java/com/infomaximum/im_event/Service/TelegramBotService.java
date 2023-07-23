@@ -63,22 +63,27 @@ public class TelegramBotService extends TelegramLongPollingBot {
                     break;
                 case "/reg":
 
-                    final String name = text[1];
-                    final String surname = text[2];
-                    final String mail = text[3];
-                    final String pass = text[4];
+                    try {
+                        final String name = text[1];
+                        final String surname = text[2];
+                        final String mail = text[3];
+                        final String pass = text[4];
 
-                    if ((mail.split("@")[1].equals("infomaximum.com") || mail.split("@")[1].equals("infomaximum.biz")) && pass.equals("1111")){
-                        final User userByTelegramID = usersService.getUserByTelegramID(chatId);
-                        if (userByTelegramID != null){
-                            sendMessage(chatId, "Вы уже подписаны на IM.EVENTS");
-                        }else {
-                            final User user = new User(name, surname, mail, pass);
-                            user.setTelegramId(chatId);
-                            usersService.registry(user);
-                            sendMessage(chatId, "Вы успешно подписались на IM.EVENTS");
+                        if ((mail.split("@")[1].equals("infomaximum.com") || mail.split("@")[1].equals("infomaximum.biz")) && pass.equals("1111")){
+                            final User userByTelegramID = usersService.getUserByTelegramID(chatId);
+                            if (userByTelegramID != null){
+                                sendMessage(chatId, "Вы уже подписаны на IM.EVENTS");
+                            }else {
+                                final User user = new User(name, surname, mail, pass);
+                                user.setTelegramId(chatId);
+                                usersService.registry(user);
+                                sendMessage(chatId, "Вы успешно подписались на IM.EVENTS");
+                            }
                         }
+                    }catch (Exception e){
+                        sendMessage(chatId, "Не правильный формат данных\n/reg имя фамилия почта пароль");
                     }
+
                     break;
                 case "/help":
                     String commandList = """
