@@ -40,6 +40,7 @@ public class UsersService {
         }
     }
 
+
     public User getUserByName(String name){
        return usersRepository.getUserByName(name).get();
     }
@@ -57,5 +58,10 @@ public class UsersService {
             return String.format("Пользователь %s удален", deletingUser);
         }
 
+    }
+
+    public User loginUser(String email) {
+        final Optional<User> userByEmail = usersRepository.getUserByEmail(email);
+        return userByEmail.orElseThrow();
     }
 }
