@@ -5,6 +5,7 @@ import com.infomaximum.im_event.Model.Event;
 import com.infomaximum.im_event.Model.User;
 import com.infomaximum.im_event.Repository.EventsRepository;
 import com.infomaximum.im_event.Repository.UsersRepository;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -22,12 +23,14 @@ public class EventsService {
 
     private final UsersRepository usersRepository;
     private final EventsRepository eventsRepository;
-    private final TelegramBotService telegramBotService;
 
-    public EventsService(UsersRepository usersRepository, EventsRepository eventsRepository, TelegramBotService telegramBotService) {
+    private final ApplicationContext applicationContext;
+
+
+    public EventsService(UsersRepository usersRepository, EventsRepository eventsRepository, ApplicationContext applicationContext) {
         this.usersRepository = usersRepository;
         this.eventsRepository = eventsRepository;
-        this.telegramBotService = telegramBotService;
+        this.applicationContext = applicationContext;
     }
 
     private Optional<Event> getEventFromDB(Long id){
@@ -73,6 +76,8 @@ public class EventsService {
                     message.append("Новое мероприятие:\n")
                             .append(event.getName()).append(" (id ").append(event.getId()).append(")").append("\n")
                             .append("   Когда: ").append(date).append("\n\n");
+
+                    final TelegramBotService telegramBotService = applicationContext.getBean(TelegramBotService.class);
                     telegramBotService.sendMessage(user.getTelegramId(), message.toString());
                 }
             }
