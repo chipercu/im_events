@@ -56,6 +56,7 @@ public class TelegramBotService extends TelegramLongPollingBot {
             final User user = usersService.getUserByTelegramID(chatId);
             if (user == null){
                 sendMessage(chatId, "До использования бота вы должны\n быть зарегистрированы на IM.EVENTS\n/reg имя фамилия почта пароль");
+                return;
             }
 
             switch (text[0]){
