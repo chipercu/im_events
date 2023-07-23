@@ -10,6 +10,8 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.IOException;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -53,9 +55,10 @@ public class TelegramBotService extends TelegramLongPollingBot {
                     final Long event_id = Long.parseLong(text[1]);
                     sendMessage(chatId, eventsService.deleteEvent("Дина", event_id));
                     break;
-                case "/getEvents":
+                case "/events":
                     sendAllEvents(chatId);
                     break;
+                case "/event":
                 default:
                     try {
                         sendMessage(chatId, " hello");
@@ -69,13 +72,18 @@ public class TelegramBotService extends TelegramLongPollingBot {
 
     private void sendAllEvents(Long chatId){
         StringBuilder answer = new StringBuilder();
-        final List<Event> allEvents = eventsService.getAllEvents().stream().filter(Event::getIsActive).toList();
+        final List<Event> allEvents = eventsService.getAllEvents().stream().filter(Event::getIsActive).sorted((o1, o2) -> {
+            final Date date1 = new Date(o1.getStart_date());
+            final Date date2 = new Date(o1.getStart_date());
+            return (int) (date1.getTime() - date2.getTime());
+        }).toList();
         if (allEvents.isEmpty()){
             answer = new StringBuilder("На данный момент нет мероприятии");
         }
-        answer.append("Список мероприятии:");
+        answer.append("Список мероприятии:\n");
         for (Event event: allEvents) {
-            answer.append(" -").append(event.getName()).append("\n");
+            answer.append("1.").append(event.getName()).append("\n")
+                    .append("   date: ").append(event.getStart_date());
         }
         sendMessage(chatId, answer.toString());
     }
