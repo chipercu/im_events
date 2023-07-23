@@ -107,7 +107,7 @@ public class EventsService {
             return String.format("Пользователь с именем %s не существует", userName);
         }
         eventByName.get().addParticipant(userByName.get());
-        eventsRepository.flush();
+        eventsRepository.saveAndFlush(eventByName.get());
         return String.format("%s был успешно добавлен на мероприятие %s", userName, event);
     }
 
@@ -205,7 +205,7 @@ public class EventsService {
         }
         if (userByName.get().getIsAdmin() || userByName.get().getName().equals(deletingUserByName.get().getName())){
             eventByName.get().getParticipants().remove(deletingUserByName.get());
-            eventsRepository.flush();
+            eventsRepository.saveAndFlush(eventByName.get());
             return String.format("Пользователь %s был удален с мероприятия", deletingUserByName);
         }else {
             return String.format("Уважаемый %s! Вы не имеете право удалять участников мероприятия", user);
