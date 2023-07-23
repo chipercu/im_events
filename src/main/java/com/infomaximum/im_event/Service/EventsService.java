@@ -106,8 +106,10 @@ public class EventsService {
         if (userByName.isEmpty()){
             return String.format("Пользователь с именем %s не существует", userName);
         }
-        if(eventByName.get().getParticipants().contains(userByName.get())){
-            return "Вы уже зарегистрированы на данное мероприятие";
+        for (User u: eventByName.get().getParticipants()){
+            if (u.getName().equals(user)){
+                return "Вы уже зарегистрированы на данное мероприятие";
+            }
         }
         eventByName.get().addParticipant(userByName.get());
         eventsRepository.saveAndFlush(eventByName.get());
