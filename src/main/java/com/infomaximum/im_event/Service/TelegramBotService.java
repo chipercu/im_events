@@ -104,7 +104,7 @@ public class TelegramBotService extends TelegramLongPollingBot {
                                     .append("Участники:\n");
                             if (participants.size() > 0){
                                 for (int i = 0; i < participants.size(); i++) {
-                                    message.append(i + 1).append(".").append(participants.get(i).getName()).append(" ").append(participants.get(i).getSurname());
+                                    message.append(i + 1).append(".").append(participants.get(i).getName()).append(" ").append(participants.get(i).getSurname()).append("\n");
                                 }
                             }
                             sendMessage(chatId, message.toString());
