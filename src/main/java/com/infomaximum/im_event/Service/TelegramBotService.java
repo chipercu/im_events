@@ -112,6 +112,7 @@ public class TelegramBotService extends TelegramLongPollingBot {
                             sendMessage(chatId, "Проверьте id мероприятия\n /event");
                         }
                     }
+                    break;
                 case "/-":
                     if (checkReg(user, chatId)){
                         final long event_id = Long.parseLong(commands[1]);
@@ -153,6 +154,7 @@ public class TelegramBotService extends TelegramLongPollingBot {
                         String commandList = """
                             command:
                             /all (просмотр списка активных мероприятий)
+                            /event id (просмотр мероприятия)
                             /reg (подписка на IM.EVENT)
                             /+ id  (запись на мероприятие)
                             /- id  (отписка от мероприятия)
