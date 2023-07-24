@@ -75,4 +75,8 @@ public class Event {
     public void addParticipant(User user) {
         participants.add(user);
     }
+
+    public void deleteParticipant(User user){
+       participants.remove(user);
+    }
 }

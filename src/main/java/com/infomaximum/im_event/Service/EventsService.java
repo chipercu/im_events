@@ -72,7 +72,10 @@ public class EventsService {
                 if (user.getTelegramId() != null){
                     StringBuilder message = new StringBuilder();
                     String[] split = event.getStart_date().split(":");
-                    String date = split[0] + ":" + split[1];
+                    String date = event.getStart_date();
+                    if (split.length > 1){
+                        date = split[0] + ":" + split[1];
+                    }
                     message.append("Новое мероприятие:\n")
                             .append(event.getName()).append(" (id ").append(event.getId()).append(")").append("\n")
                             .append("Когда: ").append(date).append("\n\n");
@@ -210,7 +213,7 @@ public class EventsService {
         }
         if (userByName.get().getIsAdmin() || userByName.get().getName().equals(deletingUserByName.get().getName())){
 
-            eventByName.get().getParticipants().remove(deletingUserByName.get());
+            eventByName.get().deleteParticipant(deletingUserByName.get());
             eventsRepository.saveAndFlush(eventByName.get());
             return String.format("Пользователь %s был удален с мероприятия", deletingUserByName);
         }else {

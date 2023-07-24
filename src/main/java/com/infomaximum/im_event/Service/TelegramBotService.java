@@ -71,7 +71,7 @@ public class TelegramBotService extends TelegramLongPollingBot {
                         if (eventById != null){
                             final List<User> allUsers = usersService.getAllUsers();
                             for (User u: allUsers){
-                                sendMessage(u.getTelegramId(), String.format("Событье %s удалена", eventById.getName()));
+                                sendMessage(u.getTelegramId(), String.format("Событие %s удалено", eventById.getName()));
                             }
                         }
                         eventsService.deleteEvent("Дина", event_id);
@@ -88,7 +88,7 @@ public class TelegramBotService extends TelegramLongPollingBot {
                         final long event_id = Long.parseLong(commands[1]);
                         final Event eventById = eventsService.getEventById(event_id);
                         if (eventById != null){
-                            eventsService.addUserToEvent(user.getName(), eventById.getName(), user.getName());
+//                            eventsService.addUserToEvent(user.getName(), eventById.getName(), user.getName());
                             sendMessage(chatId, eventsService.addUserToEvent(user.getName(), eventById.getName(), user.getName()));
                         }else {
                             sendMessage(chatId, "Проверьте id мероприятия\n /event");
@@ -193,10 +193,12 @@ public class TelegramBotService extends TelegramLongPollingBot {
 
         for (Event event : allEvents) {
             String[] split = event.getStart_date().split(":");
-            String date = split[0] + ":" + split[1];
+            String date = event.getStart_date();
+            if (split.length > 1){
+                date = split[0] + ":" + split[1];
+            }
             answer.append(i++ + ". ").append(event.getName()).append(" (id ").append(event.getId()).append(")").append("\n")
                     .append("   Когда: ").append(date).append("\n\n");
-
         }
         sendMessage(chatId, answer.toString());
     }
