@@ -1,9 +1,6 @@
 package com.infomaximum.im_event.Service;
 
-import com.infomaximum.im_event.Components.EventInfo;
-import com.infomaximum.im_event.Components.TGInlineButton;
-import com.infomaximum.im_event.Components.TGInlineKeyBoard;
-import com.infomaximum.im_event.Components.TGUtil;
+import com.infomaximum.im_event.Components.*;
 import com.infomaximum.im_event.Config.TelegramBotConfig;
 import com.infomaximum.im_event.Model.EVENT_TYPE;
 import com.infomaximum.im_event.Model.Event;
@@ -30,22 +27,17 @@ import java.util.concurrent.TimeUnit;
  * Date: 23.07.2023
  */
 @Component
-public class TelegramBotService extends TelegramLongPollingBot {
+public class TelegramBotService extends TelegramLongPollingBot implements CallBackConst {
 
     private final TelegramBotConfig botConfig;
     private final EventsService eventsService;
     private final UsersService usersService;
     private static final int defaultInfoMessageTime = 2000;
 
-    private final static String SEE_EVENT = "SEE_EVENT";
-    private final static String CLOSE_EVENT = "CLOSE_EVENT";
-    private final static String REDACT_EVENT = "REDACT_EVENT";
-    private final static String REG_TO_EVENT = "REG_TO_EVENT";
-    private final static String UNREG_TO_EVENT = "UNREG_TO_EVENT";
-    private final static String SAVE_EVENT = "SAVE_EVENT";
-    private final static String CANCEL_CREATE_EVENT = "CANCEL_CREATE_EVENT:0";
+
 
     private final Map<Long, Event> eventCreateMap = new HashMap<>();
+    private final Map<Long, User> userCreateMap = new HashMap<>();
 
 
     public TelegramBotService(TelegramBotConfig botConfig, EventsService eventsService, UsersService usersService) {
@@ -53,11 +45,7 @@ public class TelegramBotService extends TelegramLongPollingBot {
         this.eventsService = eventsService;
         this.usersService = usersService;
         List<BotCommand> listofCommands = new ArrayList<>();
-        listofCommands.add(new BotCommand("/all", "просмотр списка активных мероприятий"));
-        listofCommands.add(new BotCommand("/reg", "подписка на IM.EVENT"));
-//        listofCommands.add(new BotCommand("/createEvent", "создать новое мероприятие"));
         listofCommands.add(new BotCommand("/help", "Помощь по навигации и настройке бота"));
-
         try {
             this.execute(new SetMyCommands(listofCommands, new BotCommandScopeDefault(), null));
         } catch (TelegramApiException e) {
@@ -76,9 +64,26 @@ public class TelegramBotService extends TelegramLongPollingBot {
     }
 
 
-    private boolean checkReg(User user, long chatId) {
+    public boolean checkReg(CallbackQuery callbackQuery, long... chatId) {
+        if (callbackQuery == null){
+            SendMessage message = new SendMessage();
+            message.setChatId(chatId[0]);
+            message.setText("Для использования бота вы должны\n быть зарегистрированы на IM.EVENTS");
+            TGInlineKeyBoard keyBoard = new TGInlineKeyBoard(1);
+            keyBoard.addButton(new TGInlineButton("Регистрация", REGISTER, 1));
+            message.setReplyMarkup(keyBoard);
+            executeMessage(message);
+            return false;
+        }
+
+        final User user = usersService.getUserByTelegramID(callbackQuery.getMessage().getChatId());
         if (user == null) {
-            sendMessage(chatId, "До использования бота вы должны\n быть зарегистрированы на IM.EVENTS\n/reg Имя Фамилия почта пароль");
+            TGEditMessage message = new TGEditMessage(callbackQuery, "Для использования бота вы должны\n быть зарегистрированы на IM.EVENTS");
+            TGInlineKeyBoard keyBoard = new TGInlineKeyBoard(1);
+            keyBoard.addButton(new TGInlineButton("Регистрация", REGISTER, 1));
+            message.setReplyMarkup(keyBoard);
+            executeMessage(message);
+//            sendMessage(chatId, "До использования бота вы должны\n быть зарегистрированы на IM.EVENTS\n/reg Имя Фамилия почта пароль");
             return false;
         }
         return true;
@@ -95,10 +100,18 @@ public class TelegramBotService extends TelegramLongPollingBot {
             final long eventId = Long.parseLong(data.split(":")[1]);
             final TGUtil tgUtil = new TGUtil();
             if (data.startsWith(SEE_EVENT)){
-                getEvent(eventsService.getEventById(eventId), user, chatId);
+                getEvent(callbackQuery, eventsService.getEventById(eventId), chatId);
+            }else if (data.startsWith(MENU)){
+                TGMenu.showMenu(callbackQuery);
+            } else if (data.startsWith(REGISTER)) {
+                userCreateMap.put(callbackQuery.getMessage().getChatId(), new User());
+                TGRegister.initRegistry(callbackQuery);
+            } else if (data.startsWith(CANCEL_REGISTRY)) {
+                TGRegister.cancelRegistry(callbackQuery);
+            } else if (data.startsWith(SHOW_ALL_EVENT)) {
+                tgUtil.seeAllEvents(callbackQuery);
             } else if (data.startsWith(REG_TO_EVENT)) {
                 tgUtil.regToEvent(callbackQuery);
-
             } else if (data.startsWith(UNREG_TO_EVENT)) {
                 tgUtil.unregToEvent(callbackQuery);
 
@@ -125,12 +138,20 @@ public class TelegramBotService extends TelegramLongPollingBot {
 
 
         if (update.hasMessage() && update.getMessage().hasText()) {
-            String messageText = update.getMessage().getText();
+
+            final Message updateMessage = update.getMessage();
             long chatId = update.getMessage().getChatId();
-            final String[] commands = messageText.split(" ");
-            final User user = usersService.getUserByTelegramID(chatId);
+            switch (updateMessage.getText()) {
+                case "/help":
+                case "/start":
+                    if (checkReg(null, chatId)){
+                        TGMenu.showMenu(chatId);
+                    }
+                    break;
+            }
 
             if (eventCreateMap.containsKey(chatId)){
+                String messageText = update.getMessage().getText();
                 if (messageText.equals("/break")){
                     Event event = eventCreateMap.get(chatId);
                     if (event != null){
@@ -182,53 +203,21 @@ public class TelegramBotService extends TelegramLongPollingBot {
                                 "Тип: " + event.getEventType() + "\n" +
                                 "Описание: " + event.getDescription());
                         message.setReplyMarkup(keyBoard);
-                        executeMessage(message);
+//                        executeMessage(message);
 
                     }
                 }
             }
 
-            switch (commands[0]) {
-                case "/delete":
-                    deleteEvent(chatId, commands, user);
-                    break;
-                case "/createEvent":
-                    if (checkReg(user, chatId)){
-                        Event event = new Event(user);
-                        if (!eventCreateMap.containsKey(chatId)){
-                            eventCreateMap.put(chatId, event);
-                            sendMessage(chatId, "Задайте имя мероприятия");
-                        }
-                    }
-                    break;
-                case "/all":
-                    getAllEvents(chatId, user);
-                    break;
-                case "/reg":
-                    registryUser(chatId, commands);
-                    break;
-                case "/help":
-                    help(chatId, user);
-                    break;
+            if (userCreateMap.containsKey(chatId)){
+                final User newUser = userCreateMap.get(chatId);
+                if (newUser.getName() == null || newUser.getName().isEmpty()){
+                    newUser.setName(updateMessage.getText());
+                    TGRegister.setName(newUser, updateMessage);
+                }
             }
-        }
-    }
 
-    private void getAllEvents(long chatId, User user) {
-        if (checkReg(user, chatId)){
-            sendAllEvents(chatId);
-        }
-    }
 
-    private void help(long chatId, User user) {
-        if (checkReg(user, chatId)){
-            String commandList = """
-                command:
-                /all (просмотр списка активных мероприятий)
-                /event id (просмотр мероприятия)
-                /reg (подписка на IM.EVENT)
-                """;
-            sendMessage(chatId, commandList);
         }
     }
 
@@ -276,13 +265,11 @@ public class TelegramBotService extends TelegramLongPollingBot {
         }
     }
 
-    private void getEvent(Event event, User user, long chatId) {
-        if (checkReg(user, chatId)){
-
+    private void getEvent(CallbackQuery callbackQuery, Event event, long chatId) {
+        final User user = usersService.getUserByTelegramID(chatId);
+        if (checkReg(callbackQuery)){
             if (event != null){
-                final SendMessage sendMessage = new SendMessage();
-                sendMessage.setText(EventInfo.showEvent(event));
-                sendMessage.setChatId(chatId);
+                TGEditMessage message = new TGEditMessage(callbackQuery, EventInfo.showEvent(event));
 
                 TGInlineKeyBoard keyBoard = new TGInlineKeyBoard(2);
                 keyBoard.addButtons(new TGInlineButton("Записаться", REG_TO_EVENT  +":"+ event.getId(), 1));
@@ -293,30 +280,30 @@ public class TelegramBotService extends TelegramLongPollingBot {
                     keyBoard.addButtons(new TGInlineButton("Редактировать", REDACT_EVENT +":" + event.getId(), 2));
                 }
 
-                sendMessage.setReplyMarkup(keyBoard);
-                executeMessage(sendMessage);
+                message.setReplyMarkup(keyBoard);
+                executeMessage(message);
             }else {
                 sendMessage(chatId, "Проверьте id мероприятия\n /event");
             }
         }
     }
 
-    private void deleteEvent(long chatId, String[] commands, User user) {
-        if (checkReg(user, chatId)){
-            final Long event_id = Long.parseLong(commands[1]);
-            final Event eventById = eventsService.getEventById(event_id);
-            if (eventById != null){
-                final List<User> allUsers = usersService.getAllUsers();
-                for (User u: allUsers){
-                    sendMessage(u.getTelegramId(), String.format("Событие %s удалено", eventById.getName()));
-                }
-            }
-            eventsService.deleteEvent("Дина", event_id);
-        }
-    }
+//    private void deleteEvent(long chatId, String[] commands, User user) {
+//        if (checkReg(user, chatId)){
+//            final Long event_id = Long.parseLong(commands[1]);
+//            final Event eventById = eventsService.getEventById(event_id);
+//            if (eventById != null){
+//                final List<User> allUsers = usersService.getAllUsers();
+//                for (User u: allUsers){
+//                    sendMessage(u.getTelegramId(), String.format("Событие %s удалено", eventById.getName()));
+//                }
+//            }
+//            eventsService.deleteEvent("Дина", event_id);
+//        }
+//    }
 
 
-    public void sendAllEvents(Long chatId) {
+    public void sendAllEvents(CallbackQuery callbackQuery) {
         final List<Event> allEvents = eventsService.getAllEvents().stream().filter(Event::getIsActive).toList();
         Map<Long, String> eventsFormat = new HashMap<>();
         for (Event event : allEvents) {
@@ -328,27 +315,34 @@ public class TelegramBotService extends TelegramLongPollingBot {
             eventsFormat.put(event.getId(), event.getName() + " | " + date);
         }
         if (eventsFormat.isEmpty()){
-            sendMessage(chatId, "На данный момент нет мероприятии");
+            sendMessage(callbackQuery.getMessage().getChatId(), "На данный момент нет мероприятии");
         }
-        sendAllEventsButtons(eventsFormat, chatId);
+        sendAllEventsButtons(eventsFormat, callbackQuery);
 
     }
 
-    private void sendAllEventsButtons(Map<Long, String> events, Long chatId){
+    private void sendAllEventsButtons(Map<Long, String> events, CallbackQuery callbackQuery){
         final TGInlineKeyBoard keyBoard = new TGInlineKeyBoard(events.size());
         int i = 1;
         for (Map.Entry<Long, String> event: events.entrySet()){
             keyBoard.addButton(new TGInlineButton(event.getValue(), SEE_EVENT +":" + event.getKey(), i));
             i++;
         }
-        SendMessage message = new SendMessage();
-        message.setChatId(chatId);
-        message.setText("Мероприятия");
+        TGEditMessage message = new TGEditMessage(callbackQuery, "Мероприятия");
         message.setReplyMarkup(keyBoard);
-
         executeMessage(message);
     }
 
+
+    public void executeMessage(CallbackQuery callbackQuery, EditMessageText message){
+        try {
+            if (checkReg(callbackQuery)){
+                execute(message);
+            }
+        } catch (TelegramApiException ignored) {
+
+        }
+    }
 
     public void executeMessage(EditMessageText message){
         try {
@@ -363,7 +357,6 @@ public class TelegramBotService extends TelegramLongPollingBot {
         } catch (TelegramApiException ignored) {
 
         }
-
     }
 
     public void sendMessage(Long chatId, String textToSend) {
