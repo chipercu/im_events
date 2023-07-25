@@ -55,6 +55,16 @@ public class Event {
     @Column(name = "event_type")
     private EVENT_TYPE eventType;
 
+    public Event(User initiator) {
+        this.initiator = initiator;
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        this.create_date = dateFormat.format(new Date());
+        this.coins = 0.0;
+        this.isActive = true;
+        this.isRepeatable = false;
+
+    }
+
     public Event(String name, User initiator, String start_date, EVENT_TYPE eventType, Boolean isRepeatable, String description) {
         this.name = name;
         this.initiator = initiator;
