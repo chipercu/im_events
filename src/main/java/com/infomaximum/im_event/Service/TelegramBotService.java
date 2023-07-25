@@ -42,6 +42,8 @@ public class TelegramBotService extends TelegramLongPollingBot {
     private final static String REDACT_EVENT = "REDACT_EVENT";
     private final static String REG_TO_EVENT = "REG_TO_EVENT";
     private final static String UNREG_TO_EVENT = "UNREG_TO_EVENT";
+    private final static String SAVE_EVENT = "SAVE_EVENT";
+    private final static String CANCEL_CREATE_EVENT = "CANCEL_CREATE_EVENT:0";
 
     private final Map<Long, Event> eventCreateMap = new HashMap<>();
 
@@ -53,13 +55,11 @@ public class TelegramBotService extends TelegramLongPollingBot {
         List<BotCommand> listofCommands = new ArrayList<>();
         listofCommands.add(new BotCommand("/all", "просмотр списка активных мероприятий"));
         listofCommands.add(new BotCommand("/reg", "подписка на IM.EVENT"));
-//        listofCommands.add(new BotCommand("/+", "(запись на мероприятие)"));
-//        listofCommands.add(new BotCommand("/-", "(отписка от мероприятия)"));
+//        listofCommands.add(new BotCommand("/createEvent", "создать новое мероприятие"));
         listofCommands.add(new BotCommand("/help", "Помощь по навигации и настройке бота"));
 
         try {
             this.execute(new SetMyCommands(listofCommands, new BotCommandScopeDefault(), null));
-//            this.execute(new SetMyCommands(listofCommands, new BotCommandScopeDefault(), null));
         } catch (TelegramApiException e) {
             System.out.println(e.getMessage());
         }
@@ -98,8 +98,28 @@ public class TelegramBotService extends TelegramLongPollingBot {
                 getEvent(eventsService.getEventById(eventId), user, chatId);
             } else if (data.startsWith(REG_TO_EVENT)) {
                 tgUtil.regToEvent(callbackQuery);
+
             } else if (data.startsWith(UNREG_TO_EVENT)) {
                 tgUtil.unregToEvent(callbackQuery);
+
+            } else if (data.startsWith(SAVE_EVENT)) {
+                final Event event = eventCreateMap.get(eventId);
+                eventsService.addEvent(
+                        event.getName(),
+                        event.getInitiator(),
+                        event.getStart_date(),
+                        event.getEventType(),
+                        event.getIsRepeatable(),
+                        event.getCoins(),
+                        event.getDescription()
+                );
+
+            } else if (data.startsWith(CANCEL_CREATE_EVENT)) {
+                Event event = eventCreateMap.get(chatId);
+                if (event != null){
+                    eventCreateMap.remove(chatId);
+                    sendMessage(chatId, "Создание мероприятия отменена");
+                }
             }
         }
 
@@ -148,18 +168,27 @@ public class TelegramBotService extends TelegramLongPollingBot {
                         }
                     }else if (event.getDescription() == null || event.getDescription().isEmpty()){
                         event.setDescription(messageText);
-                        sendMessage(chatId, "Имя события: " + messageText + "\n" +
+//                        sendMessage(chatId, "Имя события: " + messageText + "\n" +
+//                                "Когда: " + event.getStart_date() + "\n" +
+//                                "Тип: " + event.getEventType() + "\n" +
+//                                "Описание: " + event.getDescription());
+                        TGInlineKeyBoard keyBoard = new TGInlineKeyBoard(1);
+                        keyBoard.addButton(new TGInlineButton("Подтвердить", SAVE_EVENT + ":" + chatId, 1));
+                        keyBoard.addButton(new TGInlineButton("Отмена", CANCEL_CREATE_EVENT, 1));
+                        SendMessage message = new SendMessage();
+                        message.setChatId(chatId);
+                        message.setText("Имя события: " + messageText + "\n" +
                                 "Когда: " + event.getStart_date() + "\n" +
                                 "Тип: " + event.getEventType() + "\n" +
                                 "Описание: " + event.getDescription());
+                        message.setReplyMarkup(keyBoard);
+                        executeMessage(message);
+
                     }
                 }
             }
 
-
-
             switch (commands[0]) {
-
                 case "/delete":
                     deleteEvent(chatId, commands, user);
                     break;
@@ -174,15 +203,6 @@ public class TelegramBotService extends TelegramLongPollingBot {
                     break;
                 case "/all":
                     getAllEvents(chatId, user);
-                    break;
-                case "/+":
-//                    addUserToEvent(chatId, Long.parseLong(commands[1]), user);
-                    break;
-                case "/event":
-//                    getEvent(chatId, Long.parseLong(commands[1]) , user);
-                    break;
-                case "/-":
-                    deleteUserFromEvent(chatId, Long.parseLong(commands[1]), user);
                     break;
                 case "/reg":
                     registryUser(chatId, commands);
@@ -207,8 +227,6 @@ public class TelegramBotService extends TelegramLongPollingBot {
                 /all (просмотр списка активных мероприятий)
                 /event id (просмотр мероприятия)
                 /reg (подписка на IM.EVENT)
-                /+ id  (запись на мероприятие)
-                /- id  (отписка от мероприятия)
                 """;
             sendMessage(chatId, commandList);
         }
@@ -236,80 +254,12 @@ public class TelegramBotService extends TelegramLongPollingBot {
             sendMessage(chatId, "Не правильный формат данных\n/reg Имя Фамилия почта пароль");
         }
     }
-
-//    private void addUserToEvent(long chatId, long event_id, User user) {
-//        if (checkReg(user, chatId)){
-//            final Event eventById = eventsService.getEventById(event_id);
-//            if (eventById != null){
-//                sendMessage(chatId, eventsService.addUserToEvent(user.getName(), eventById.getName(), user.getName()));
-//            }else {
-//                sendMessage(chatId, "Проверьте id мероприятия\n /event");
-//            }
-//        }
-//    }
-
-    private void deleteUserFromEvent(long chatId, long event_id, User user) {
-        if (checkReg(user, chatId)){
-            final Event eventById = eventsService.getEventById(event_id);
-            if (eventById != null){
-                List<User> participants = eventById.getParticipants();
-
-                final Optional<User> first = participants.stream()
-                        .filter(u -> Objects.equals(u.getTelegramId(), user.getTelegramId()))
-                        .filter(u -> u.getEmail().equals(user.getEmail()))
-                        .findFirst();
-
-                if (first.isPresent()){
-                    String s = eventsService.deleteUserFromEvent(user.getName(), eventById.getName(), user.getName());
-//                    sendMessage(chatId, "Вы успешно отписались от мероприятия " + eventById.getName());
-
-                    infoMessage(chatId,"Вы успешно отписались от мероприятия " + eventById.getName());
-//                    try {
-//                        SendMessage message = new SendMessage();
-//                        message.setChatId(chatId);
-//                        message.setText("Вы успешно отписались от мероприятия " + eventById.getName());
-//                        Message sentOutMessage = execute(message);
-//
-//                        Executors.newSingleThreadScheduledExecutor().schedule(() -> {
-//                            try {
-//                                DeleteMessage deleteMessage = new DeleteMessage();
-//                                deleteMessage.setChatId(sentOutMessage.getChatId());
-//                                deleteMessage.setMessageId(sentOutMessage.getMessageId());
-//                                execute(deleteMessage);
-//                            } catch (TelegramApiException e) {
-//                                throw new RuntimeException(e);
-//                            }
-//                        }, 1000, TimeUnit.MILLISECONDS);
-//
-//                    }catch (TelegramApiException ignored){
-//
-//                    }
-                }else {
-                    infoMessage(chatId, "Вы не являетесь участником мероприятия " + eventById.getName());
-//                    sendMessage(chatId, "Вы не являетесь участником мероприятия " + eventById.getName());
-                }
-//
-//                for (User u: participants){
-//                    if (Objects.equals(u.getId(), user.getId())){
-//                        String s = eventsService.deleteUserFromEvent(user.getName(), eventById.getName(), user.getName());
-//                        sendMessage(chatId, "Вы успешно отписались от мероприятия " + eventById.getName());
-//                    }else {
-//                        sendMessage(chatId, "Вы не являетесь участником мероприятия " + eventById.getName());
-//                    }
-//                }
-            }else {
-                sendMessage(chatId, "Проверьте id мероприятия\n /event");
-            }
-        }
-    }
-
     public void infoMessage(long chatId, String text){
         try {
             SendMessage message = new SendMessage();
             message.setChatId(chatId);
             message.setText(text);
             Message sentOutMessage = execute(message);
-
             Executors.newSingleThreadScheduledExecutor().schedule(() -> {
                 try {
                     DeleteMessage deleteMessage = new DeleteMessage();
@@ -345,7 +295,6 @@ public class TelegramBotService extends TelegramLongPollingBot {
 
                 sendMessage.setReplyMarkup(keyBoard);
                 executeMessage(sendMessage);
-//                sendMessage(chatId, message.toString());
             }else {
                 sendMessage(chatId, "Проверьте id мероприятия\n /event");
             }
@@ -386,25 +335,12 @@ public class TelegramBotService extends TelegramLongPollingBot {
     }
 
     private void sendAllEventsButtons(Map<Long, String> events, Long chatId){
-//        InlineKeyboardMarkup ikm = new InlineKeyboardMarkup();
-//        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-
         final TGInlineKeyBoard keyBoard = new TGInlineKeyBoard(events.size());
         int i = 1;
-
         for (Map.Entry<Long, String> event: events.entrySet()){
             keyBoard.addButton(new TGInlineButton(event.getValue(), SEE_EVENT +":" + event.getKey(), i));
             i++;
-//
-//
-//            List<InlineKeyboardButton> buttons = new ArrayList<>();
-//            InlineKeyboardButton button = new InlineKeyboardButton();
-//            button.setText(event.getValue());
-//            button.setCallbackData("SEE_EVENT:" + event.getKey());
-//            buttons.add(button);
-//            rows.add(buttons);
         }
-//        ikm.setKeyboard(rows);
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setText("Мероприятия");
@@ -414,11 +350,6 @@ public class TelegramBotService extends TelegramLongPollingBot {
     }
 
 
-    private void startCommandReceived(Long chatId, String name) {
-        String answer = "";
-        sendMessage(chatId, answer);
-    }
-
     public void executeMessage(EditMessageText message){
         try {
             execute(message);
@@ -426,31 +357,7 @@ public class TelegramBotService extends TelegramLongPollingBot {
 
         }
     }
-    public void executeMessage(DeleteMessage message){
-
-//        Message sentOutMessage=execute(message);
-//
-//        DeleteMessage deleteMessage = new DeleteMessage();
-//        deleteMessage.setChatId(sentOutMessage.getChatId());
-//        deleteMessage.setMessageId(sentOutMessage.getMessageId());
-//            //пауза
-//        execute(deleteMessage);
-
-        try {
-            execute(message);
-        } catch (TelegramApiException ignored) {
-
-        }
-    }
     public void executeMessage(SendMessage message){
-//        final ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
-//        List<KeyboardRow> rowList = new ArrayList<>();
-//        KeyboardRow row = new KeyboardRow();
-//        KeyboardButton button = new KeyboardButton("/all");
-//        row.add(button);
-//        rowList.add(row);
-//        replyKeyboardMarkup.setKeyboard(rowList);
-//        message.setReplyMarkup(replyKeyboardMarkup);
         try {
             execute(message);
         } catch (TelegramApiException ignored) {
@@ -458,7 +365,6 @@ public class TelegramBotService extends TelegramLongPollingBot {
         }
 
     }
-
 
     public void sendMessage(Long chatId, String textToSend) {
         SendMessage sendMessage = new SendMessage();
