@@ -49,7 +49,8 @@ public class EventsController {
 
     @PostMapping("/addUserToEvent")
     public String addUserToEvent(String user, String event, String userName){
-        return eventsService.addUserToEvent(user, event, userName);
+//        return eventsService.addUserToEvent(user, event, userName);
+        return "премено отключена";
     }
 
     @PostMapping("/deleteUserFromEvent")

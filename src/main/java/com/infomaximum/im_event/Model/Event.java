@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by a.kiperku
@@ -82,11 +83,27 @@ public class Event {
         this.coins = coin;
     }
 
-    public void addParticipant(User user) {
-        participants.add(user);
+    public boolean addParticipant(User user) {
+        return participants.add(user);
+    }
+    public boolean removeParticipant(User user) {
+        final Optional<User> first = participants.stream()
+                .filter(u -> u.getEmail().equals(user.getEmail()))
+                .filter(u -> u.getTelegramId().equals(user.getTelegramId()))
+                .findFirst();
+        return participants.remove(first.get());
+//        return participants.remove(user);
     }
 
-    public void deleteParticipant(User user){
-       participants.remove(user);
+    public boolean deleteParticipant(User user){
+        final Optional<User> first = participants.stream()
+                .filter(u -> u.getEmail().equals(user.getEmail()))
+                .filter(u -> u.getTelegramId().equals(user.getTelegramId()))
+                .findFirst();
+        if (first.isPresent()){
+            return participants.remove(first.get());
+        }else {
+            return false;
+        }
     }
 }

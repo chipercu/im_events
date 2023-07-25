@@ -2,6 +2,7 @@ package com.infomaximum.im_event.Model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @Table(name = "users")
+@EqualsAndHashCode
 public class User {
 
     public User(String name, String surname, String password, String email) {

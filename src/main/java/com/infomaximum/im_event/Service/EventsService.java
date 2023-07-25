@@ -8,10 +8,7 @@ import com.infomaximum.im_event.Repository.UsersRepository;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Created by a.kiperku
@@ -96,27 +93,60 @@ public class EventsService {
         return new ArrayList<User>();
     }
 
-    public String addUserToEvent(String user, String event, String userName) {
+    public boolean addUserToEvent(User user, Event event){
+        event.addParticipant(user);
+        eventsRepository.saveAndFlush(event);
+        final Optional<Event> eventById = eventsRepository.getEventById(event.getId());
+        if (eventById.isPresent()){
+            final Optional<User> first = eventById.get().getParticipants().stream()
+                    .filter(u -> Objects.equals(u.getTelegramId(), user.getTelegramId()))
+                    .filter(u -> u.getEmail().equals(user.getEmail()))
+                    .findFirst();
+            return first.isPresent();
+        }else {
+            return false;
+        }
+    }
+    public boolean removeUserToEvent(User user, Event event){
+        event.removeParticipant(user);
+        eventsRepository.saveAndFlush(event);
+        final Optional<Event> eventById = eventsRepository.getEventById(event.getId());
+        if (eventById.isPresent()){
+            final Optional<User> first = eventById.get().getParticipants().stream()
+                    .filter(u -> Objects.equals(u.getTelegramId(), user.getTelegramId()))
+                    .filter(u -> u.getEmail().equals(user.getEmail()))
+                    .findFirst();
+            return first.isEmpty();
+        }else {
+            return false;
+        }
+    }
+
+    public Boolean addUserToEvent(String user, String event, String userName) {
         final Optional<User> redactor = usersRepository.getUserByName(user);
         if (redactor.isEmpty()){
-            return String.format("Пользователь с именем %s не существует", user);
+            return false;
         }
         final Optional<Event> eventByName = eventsRepository.getEventByName(event);
         final Optional<User> userByName = usersRepository.getUserByName(userName);
         if (eventByName.isEmpty()){
-            return String.format("Мероприятие с именем %s не существует", event);
+            return false;
+//            return String.format("Мероприятие с именем %s не существует", event);
         }
         if (userByName.isEmpty()){
-            return String.format("Пользователь с именем %s не существует", userName);
+            return false;
+//            return String.format("Пользователь с именем %s не существует", userName);
         }
         for (User u: eventByName.get().getParticipants()){
             if (u.getName().equals(user)){
-                return "Вы уже зарегистрированы на данное мероприятие";
+                return false;
+//                return "Вы уже зарегистрированы на данное мероприятие";
             }
         }
         eventByName.get().addParticipant(userByName.get());
         eventsRepository.saveAndFlush(eventByName.get());
-        return String.format("%s был успешно добавлен на мероприятие %s", userName, event);
+        return true;
+//        return String.format("%s был успешно добавлен на мероприятие %s", userName, event);
     }
 
     public String deleteEvent(String user, String event) {
