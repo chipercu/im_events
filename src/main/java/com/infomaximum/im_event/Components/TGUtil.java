@@ -79,15 +79,11 @@ public class TGUtil implements CallBackConst{
         final long eventId = Long.parseLong(callbackQuery.getData().split(":")[1]);
         final Event event = eventService.getEventById(eventId);
 
-        final Optional<User> first = event.getParticipants().stream()
-                .filter(u -> Objects.equals(u.getTelegramId(), user.getTelegramId()))
-                .filter(u -> u.getEmail().equals(user.getEmail()))
-                .findFirst();
-        if (first.isEmpty()){
+        if (!isRegToEvent(user, event)){
             if (eventService.addUserToEvent(user, event)){
                 telegramBotService.infoMessage(chatId, String.format("%s был успешно добавлен на мероприятие %s", user.getName(), event.getName()));
                 TGEditMessage message = new TGEditMessage(callbackQuery, EventInfo.showEvent(event));
-                message.setReplyMarkup(callbackQuery.getMessage().getReplyMarkup());
+                message.setReplyMarkup(getEventKeyBoard(user, event));
                 telegramBotService.executeMessage(callbackQuery, message);
             }
         }else {
@@ -100,22 +96,48 @@ public class TGUtil implements CallBackConst{
         final long eventId = Long.parseLong(callbackQuery.getData().split(":")[1]);
         final Event event = eventService.getEventById(eventId);
 
-        final Optional<User> first = event.getParticipants().stream()
-                .filter(u -> Objects.equals(u.getTelegramId(), user.getTelegramId()))
-                .filter(u -> u.getEmail().equals(user.getEmail()))
-                .findFirst();
-        if (first.isPresent()){
+        if (isRegToEvent(user, event)){
             if (eventService.removeUserToEvent(user, event)){
                 telegramBotService.infoMessage(chatId, "Вы успешно отписались от мероприятия " + event.getName());
-
                 TGEditMessage message = new TGEditMessage(callbackQuery, EventInfo.showEvent(event));
-                message.setReplyMarkup(callbackQuery.getMessage().getReplyMarkup());
+//                message.setReplyMarkup(callbackQuery.getMessage().getReplyMarkup());
+                message.setReplyMarkup(getEventKeyBoard(user, event));
                 telegramBotService.executeMessage(callbackQuery, message);
             }
         }else {
             telegramBotService.infoMessage(chatId, "Вы не являетесь участником мероприятия " + event.getName());
         }
     }
+    public static TGInlineKeyBoard getEventKeyBoard(User user, Event event){
+        TGInlineKeyBoard keyBoard = new TGInlineKeyBoard(2);
+        if (TGUtil.isRegToEvent(user, event)) {
+            keyBoard.addButtons(new TGInlineButton("Отписаться", UNREG_TO_EVENT + ":" + event.getId(), 1));
+        } else {
+            keyBoard.addButtons(new TGInlineButton("Записаться", REG_TO_EVENT + ":" + event.getId(), 1));
+        }
+
+        keyBoard.addButtons(new TGInlineButton("Обновить", REFRESH_EVENT + ":" + event.getId(), 1));
+        keyBoard.addButtons(new TGInlineButton("MENU", MENU + ":" + event.getId(), 1));
+
+        if (user.getIsAdmin() || event.getInitiator().getId().equals(user.getId())) {
+            keyBoard.addButtons(new TGInlineButton("Завершить", CLOSE_EVENT + ":" + event.getId(), 2));
+            keyBoard.addButtons(new TGInlineButton("Редактировать", REDACT_EVENT + ":" + event.getId(), 2));
+            keyBoard.addButtons(new TGInlineButton("УДАЛИТЬ", DELETE_EVENT + ":" + event.getId(), 2));
+        }
+        return keyBoard;
+    }
+
+    public static boolean isRegToEvent(User user, Event event){
+        final Optional<User> first = event.getParticipants().stream()
+                .filter(u -> u.getTelegramId().equals(user.getTelegramId()))
+                .filter(u -> u.getEmail().equals(user.getEmail()))
+                .filter(u -> u.getId().equals(user.getId()))
+                .findFirst();
+        return first.isPresent();
+    }
+
+
+
 
 
 }

@@ -69,8 +69,8 @@ public class EventsController {
     }
 
     @DeleteMapping("/deleteEventById")
-    public String deleteEvent(String user, Long id){
-        return eventsService.deleteEvent(user, id);
+    public String deleteEvent(Long id){
+        return eventsService.deleteEvent(id);
     }
     @PostMapping("/restartEvent")
     public String restartEvent(String user, String event){

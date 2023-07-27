@@ -13,12 +13,36 @@ public interface CallBackConst {
 
     String MENU = "MENU:0";
     String CREATE_EVENT = "CREATE_EVENT:0";
+    String CONFIRM_CREATE_EVENT = "CONFIRM_CREATE_EVENT:0";
     String CATEGORY_EVENT = "CATEGORY_EVENT:0";
     String SHOW_ALL_EVENT = "SHOW_ALL_EVENT:0";
     String USER_SETTINGS = "USER_SETTINGS:0";
 
+    String MAIL = "MAIL:0";
+
 
     String CANCEL_REGISTRY = "CANCEL_REGISTRY:0";
+    String CONFIRM_REGISTRY = "CONFIRM_REGISTRY:0";
+
+    String REDACT_USER = "REDACT_USER:0";
+    String DELETE_USER = "DELETE_USER:0";
+    String CONFIRM_DELETE_USER = "CONFIRM_DELETE_USER:0";
+    String CONFIRM_DELETE_EVENT = "CONFIRM_DELETE_EVENT:0";
+    String DELETE_EVENT = "DELETE_EVENT";
+
+
+    String EVENT_TYPES = "EVENT_TYPE:0:";
+    String SPORT = "SPORT";
+    String EDUCATION = "EDUCATION";
+    String CULTURE = "CULTURE";
+    String GAME = "GAME";
+    String CINEMA = "CINEMA";
+    String CHILL = "CHILL";
+
+
+
+
+
 
 
 

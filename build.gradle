@@ -32,6 +32,8 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	// https://mvnrepository.com/artifact/org.telegram/telegrambots
 	implementation group: 'org.telegram', name: 'telegrambots', version: '6.1.0'
+//	implementation fileTree(dir: 'im_event', includes: "*.jar")
+
 
 }
 

@@ -18,6 +18,14 @@ import java.util.List;
 @EqualsAndHashCode
 public class User {
 
+
+    public User(Long chatId, boolean isAdmin){
+        this.setTelegramId(chatId);
+        this.setIsAdmin(isAdmin);
+        this.setCoins(0.0);
+    }
+
+
     public User(String name, String surname, String password, String email) {
         this.name = name;
         this.surname = surname;

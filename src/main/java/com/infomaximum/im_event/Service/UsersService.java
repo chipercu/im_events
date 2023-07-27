@@ -40,6 +40,11 @@ public class UsersService {
         }
     }
 
+    public boolean registryFromTG(User user){
+        usersRepository.saveAndFlush(user);
+        return usersRepository.getUserByTelegramId(user.getTelegramId()) != null;
+    }
+
 
     public User getUserByName(String name){
        return usersRepository.getUserByName(name).get();
@@ -57,8 +62,14 @@ public class UsersService {
             usersRepository.delete(deletingUserByName.get());
             return String.format("Пользователь %s удален", deletingUser);
         }
-
     }
+    public void deleteUser(long telegramId){
+        final User userByTelegramId = usersRepository.getUserByTelegramId(telegramId);
+        if (userByTelegramId != null){
+            usersRepository.delete(userByTelegramId);
+        }
+    }
+
 
     public User loginUser(String email) {
         final Optional<User> userByEmail = usersRepository.getUserByEmail(email);

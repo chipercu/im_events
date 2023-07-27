@@ -58,7 +58,7 @@ public class Event {
 
     public Event(User initiator) {
         this.initiator = initiator;
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm");
         this.create_date = dateFormat.format(new Date());
         this.coins = 0.0;
         this.isActive = true;
@@ -69,7 +69,7 @@ public class Event {
     public Event(String name, User initiator, String start_date, EVENT_TYPE eventType, Boolean isRepeatable, String description) {
         this.name = name;
         this.initiator = initiator;
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm");
         this.create_date = dateFormat.format(new Date());
         this.start_date = start_date;
         this.coins = 0.0;
@@ -91,8 +91,10 @@ public class Event {
                 .filter(u -> u.getEmail().equals(user.getEmail()))
                 .filter(u -> u.getTelegramId().equals(user.getTelegramId()))
                 .findFirst();
-        return participants.remove(first.get());
-//        return participants.remove(user);
+        if (first.isPresent()){
+            return participants.remove(first.get());
+        }
+        return false;
     }
 
     public boolean deleteParticipant(User user){

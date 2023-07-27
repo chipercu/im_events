@@ -54,6 +54,17 @@ public class EventsService {
         return getEventFromDB(name).get();
     }
 
+    public Event addNewEvent(Event event){
+        final Optional<Event> eventByName = eventsRepository.getEventByName(event.getName());
+        if (eventByName.isPresent()){
+            return eventByName.get();
+        }else {
+            eventsRepository.saveAndFlush(event);
+            final List<User> all = usersRepository.findAll();
+            return event;
+        }
+    }
+
     public Event addEvent(String name, User initiator, String start_date, EVENT_TYPE eventType, Boolean isRepeatable, Double coin, String description){
         final Optional<Event> eventByName = eventsRepository.getEventByName(name);
         if (eventByName.isPresent()){
@@ -83,6 +94,19 @@ public class EventsService {
             }
             return event;
         }
+    }
+
+    public boolean changeInitiator(Long eventID, User user) {
+        final Optional<Event> event = eventsRepository.getEventById(eventID);
+        if (event.isEmpty()) {
+            return false;
+        }
+        event.get().setInitiator(user);
+        eventsRepository.saveAndFlush(event.get());
+        final Optional<Event> optionalEvent = eventsRepository.getEventById(eventID);
+        return optionalEvent
+                .map(value -> value.getInitiator().getTelegramId().equals(user.getTelegramId()))
+                .orElse(false);
     }
 
     public List<User> getEventUsers(String event) {
@@ -167,7 +191,7 @@ public class EventsService {
         }
     }
 
-    public String deleteEvent(String user, Long id) {
+    public String deleteEvent(Long id) {
         final Optional<Event> eventByName = eventsRepository.getEventById(id);
         if (eventByName.isEmpty()){
             return String.format("Событье с ID %s не существует", id);
